@@ -1,0 +1,35 @@
+.field {
+  display: block;
+  width: 100%;
+  font-size: 32rpx;
+  font-weight: 500;
+  color: var(--text-primary);
+  margin-top: 8rpx;
+}
+
+/* 标签快捷选择胶囊 */
+.tag-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 16rpx;
+  margin-top: 20rpx;
+}
+.tag-chip {
+  padding: 12rpx 28rpx;
+  font-size: 26rpx;
+  color: var(--text-secondary);
+  background: var(--bg-canvas);
+  border: 2rpx solid var(--border-subtle);
+  border-radius: 999rpx;
+  line-height: 1.2;
+}
+.tag-chip.active {
+  color: var(--on-brand);
+  background: var(--brand);
+  border-color: var(--brand);
+}
+.tag-chip.clear {
+  color: var(--text-tertiary);
+  background: transparent;
+  border-style: dashed;
+}

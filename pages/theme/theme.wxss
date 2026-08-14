@@ -1,0 +1,54 @@
+/* 主题设置页 */
+.theme-list {
+  margin-top: 30rpx;
+  background: var(--surface);
+  border: 2rpx solid var(--border-subtle);
+  border-radius: var(--r-card);
+  overflow: hidden;
+}
+
+.theme-opt {
+  display: flex;
+  align-items: center;
+  padding: 30rpx 36rpx;
+  border-bottom: 2rpx solid var(--border-subtle);
+}
+.theme-opt:last-child { border-bottom: none; }
+
+.theme-opt.active {
+  background: var(--brand-soft);
+}
+
+.swatches {
+  display: flex;
+  gap: 12rpx;
+  margin-right: 28rpx;
+}
+.sw {
+  width: 44rpx;
+  height: 44rpx;
+  border-radius: 50%;
+  border: 2rpx solid rgba(0,0,0,0.06);
+}
+
+.to-name {
+  flex: 1;
+  font-size: 30rpx;
+  font-weight: 500;
+  color: var(--text-primary);
+}
+.theme-opt.active .to-name { color: var(--brand); }
+
+.to-check {
+  width: 36rpx;
+  height: 36rpx;
+}
+.to-check image { width: 36rpx; height: 36rpx; display: block; }
+
+.theme-note {
+  margin-top: 30rpx;
+  padding: 0 40rpx;
+  font-size: 22rpx;
+  line-height: 1.6;
+  color: var(--text-tertiary);
+}

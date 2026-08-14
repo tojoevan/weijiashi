@@ -1,0 +1,37 @@
+<view class="screen" style="{{themeStyle}}">
+  <view class="status-bar">
+    <text class="time">9:41</text>
+    <view class="status-icons">
+      <view class="signal"><i></i><i></i><i></i><i></i></view>
+      <view class="wifi"></view>
+      <view class="bat"><i></i></view>
+    </view>
+  </view>
+
+  <view class="nav-bar">
+    <view class="back" bindtap="goBack"><image src="{{icons.back}}"/></view>
+    <text class="title">会员与权益</text>
+    <view class="more"><i></i><i></i><i></i></view>
+  </view>
+
+  <scroll-view class="scroll" scroll-y>
+    <view style="height:30rpx"></view>
+
+    <view class="member-hero">
+      <text class="mh-title">微家事 · 完全免费</text>
+      <text class="mh-sub">所有功能不收费 · 无内购 · 无广告</text>
+    </view>
+
+    <view style="height:40rpx"></view>
+
+    <view class="benefit"><view class="ck"><image src="{{icons.checkW}}"/></view><text class="bt">本地 + 云端自动双备份</text></view>
+    <view class="benefit" style="margin-top:24rpx"><view class="ck"><image src="{{icons.checkW}}"/></view><text class="bt">家庭空间共享待办与档案</text></view>
+    <view class="benefit" style="margin-top:24rpx"><view class="ck"><image src="{{icons.checkW}}"/></view><text class="bt">无限物品档案与照片存档</text></view>
+    <view class="benefit" style="margin-top:24rpx"><view class="ck"><image src="{{icons.checkW}}"/></view><text class="bt">全量数据导出与导入</text></view>
+
+    <view class="btn-primary detail-btn" hover-class="btn-press" hover-stay-time="80" bindtap="subscribe">
+      <text class="btn-text">已永久免费 · 放心使用</text>
+    </view>
+    <view class="detail-foot"></view>
+  </scroll-view>
+</view>

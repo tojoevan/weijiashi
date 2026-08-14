@@ -1,0 +1,65 @@
+<view class="screen" style="{{themeStyle}}">
+  <view class="status-bar">
+    <text class="time">9:41</text>
+    <view class="status-icons">
+      <view class="signal"><i></i><i></i><i></i><i></i></view>
+      <view class="wifi"></view>
+      <view class="bat"><i></i></view>
+    </view>
+  </view>
+
+  <scroll-view class="scroll" scroll-y>
+    <view style="height:36rpx"></view>
+    <text style="display:block;padding:0 40rpx;font-size:44rpx;font-weight:600;color:var(--text-primary)">档案</text>
+    <text style="display:block;padding:12rpx 40rpx 0;font-size:26rpx;color:var(--text-tertiary)">家里的物品与保修凭证 · 长按可分享到家庭</text>
+
+    <view class="space-switch" style="margin-top:30rpx">
+      <view class="space-seg {{space==='personal'?'active':''}}" bindtap="setSpace" data-s="personal"><view class="dot brand"></view><text>个人空间</text></view>
+      <view class="space-seg {{space==='family'?'active':''}}" bindtap="setSpace" data-s="family"><view class="dot family"></view><text>家庭空间</text></view>
+    </view>
+
+    <view class="section-title" style="margin-top:30rpx">
+      <text class="t">全部物品</text>
+      <text class="a tapt" bindtap="goAddRecord">+ 添加（{{items.length}}）</text>
+    </view>
+
+    <view class="archive-grid" style="margin-top:30rpx">
+      <block wx:for="{{items}}" wx:key="id">
+        <view class="archive-card" bindtap="goDetail" data-id="{{item.id}}">
+          <view class="archive-photo"></view>
+          <view class="archive-info">
+            <text class="archive-name">{{item.name}}</text>
+            <view class="archive-status">
+              <view class="dot {{item.dot}}"></view>
+              <text class="txt">{{item.status}}</text>
+            </view>
+          </view>
+        </view>
+      </block>
+    </view>
+
+    <view wx:if="{{!loading && items.length === 0}}" style="padding:60rpx 40rpx;text-align:center;color:var(--text-tertiary);font-size:26rpx">
+      还没有物品档案，点右上角「+ 添加」记录第一件家电的保修凭证吧
+    </view>
+
+    <view style="height:340rpx"></view>
+  </scroll-view>
+
+  <!-- 底部合并操作条（搜索 + 新建） -->
+  <view class="action-bar">
+    <view class="ab-search tapt" bindtap="goSearch">
+      <image src="{{icons.search}}"/>
+      <text class="ab-ph">搜索待办、事务、档案、成员</text>
+    </view>
+    <view class="ab-plus tapt" hover-class="fab-press" hover-stay-time="80" bindtap="goNewTask"><text>+</text></view>
+  </view>
+
+  <view class="tabbar">
+    <view class="capsule">
+      <view class="seg {{selected===0?'active':''}}" bindtap="go" data-p="today"><image class="ic" src="{{icons.tabToday}}"/><text class="lb">今天</text></view>
+      <view class="seg {{selected===1?'active':''}}" bindtap="go" data-p="tasks"><image class="ic" src="{{icons.tabTasks}}"/><text class="lb">事务</text></view>
+      <view class="seg {{selected===2?'active':''}}" bindtap="go" data-p="archive"><image class="ic" src="{{icons.tabArchive}}"/><text class="lb">档案</text></view>
+      <view class="seg {{selected===3?'active':''}}" bindtap="go" data-p="mine"><image class="ic" src="{{icons.tabMine}}"/><text class="lb">我的</text></view>
+    </view>
+  </view>
+</view>

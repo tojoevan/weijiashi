@@ -1,0 +1,87 @@
+<view class="screen" style="{{themeStyle}}">
+  <view class="status-bar">
+    <text class="time">9:41</text>
+    <view class="status-icons">
+      <view class="signal"><i></i><i></i><i></i><i></i></view>
+      <view class="wifi"></view>
+      <view class="bat"><i></i></view>
+    </view>
+  </view>
+
+  <view class="nav-bar">
+    <view class="back" bindtap="goBack"><image src="{{icons.back}}"/></view>
+    <text class="title">{{kind==='task' ? '新建事务' : '新建待办'}}</text>
+    <view class="more"><i></i><i></i><i></i></view>
+  </view>
+
+  <scroll-view class="scroll" scroll-y>
+    <view style="height:30rpx"></view>
+
+    <view class="input-card">
+      <text class="lbl">{{kind==='task' ? '事项标题' : '待办标题'}}</text>
+      <input class="field" placeholder="{{kind==='task' ? '例如：空调滤网清洗' : '例如：交 8 月物业费'}}" placeholder-style="color:var(--text-tertiary)"
+             value="{{title}}" bindinput="onTitle" />
+    </view>
+
+    <view class="input-card" style="margin-top:24rpx">
+      <text class="lbl">{{kind==='task' ? '分组 / 物品' : '关联物品（可选）'}}</text>
+      <input class="field" placeholder="{{kind==='task' ? '例如：客厅空调' : '例如：客厅空调'}}" placeholder-style="color:var(--text-tertiary)"
+             value="{{item}}" bindinput="onItem" />
+    </view>
+
+    <view class="space-switch" style="margin-top:28rpx">
+      <view class="space-seg {{space==='personal'?'active':''}}" bindtap="setSpace" data-s="personal"><view class="dot brand"></view><text>个人空间</text></view>
+      <view class="space-seg {{space==='family'?'active':''}}" bindtap="setSpace" data-s="family"><view class="dot family"></view><text>家庭空间</text></view>
+    </view>
+
+    <picker mode="date" value="{{datePart}}" bindchange="onDate">
+      <view class="row form" style="margin-top:28rpx">
+        <text class="label" style="width:auto">日期</text>
+        <text class="value">{{datePart ? dateText : '不指定'}}</text>
+        <image class="chev" src="{{icons.chev}}"/>
+      </view>
+    </picker>
+
+    <picker mode="time" value="{{timePart}}" bindchange="onTime">
+      <view class="row form" style="margin-top:28rpx">
+        <text class="label" style="width:auto">时间</text>
+        <text class="value">{{timePart ? timePart : '不指定'}}</text>
+        <image class="chev" src="{{icons.chev}}"/>
+      </view>
+    </picker>
+
+    <view class="input-card" style="margin-top:24rpx">
+      <text class="lbl">标签（可选）</text>
+      <input class="field" placeholder="如：重复 / 账单 / 家庭，也可自定义" placeholder-style="color:var(--text-tertiary)"
+             value="{{tag}}" bindinput="onTag" />
+      <view class="tag-chips">
+        <view wx:for="{{tagChips}}" wx:key="*this"
+              class="tag-chip {{tag === item ? 'active' : ''}}" bindtap="pickChip" data-t="{{item}}">{{item}}</view>
+        <view wx:if="{{tag}}" class="tag-chip clear" bindtap="clearChip">清除</view>
+      </view>
+    </view>
+
+    <view class="photo-head" style="margin-top:30rpx">
+      <text class="t">照片（选填）</text>
+      <text class="s">发票 · 凭证 · 现场图</text>
+    </view>
+    <view class="photo-grid" style="margin-top:20rpx">
+      <block wx:for="{{previews}}" wx:key="*this">
+        <view class="ph" style="position:relative">
+          <image src="{{item}}" mode="aspectFill" style="width:100%;height:100%;border-radius:24rpx"/>
+          <view class="del" catchtap="removePreview" data-idx="{{index}}">×</view>
+        </view>
+      </block>
+      <view class="add" bindtap="chooseImage">
+        <view class="plus"></view>
+        <text class="t">添加照片</text>
+      </view>
+    </view>
+
+    <view class="btn-primary detail-btn" hover-class="btn-press" hover-stay-time="80" bindtap="create">
+      <view class="btn-ico"></view>
+      <text class="btn-text">{{kind==='task' ? '创建事务' : '创建待办'}}</text>
+    </view>
+    <view class="detail-foot"></view>
+  </scroll-view>
+</view>

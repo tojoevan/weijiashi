@@ -1,0 +1,59 @@
+<view class="screen" style="{{themeStyle}}">
+  <view class="status-bar">
+    <text class="time">9:41</text>
+    <view class="status-icons">
+      <view class="signal"><i></i><i></i><i></i><i></i></view>
+      <view class="wifi"></view>
+      <view class="bat"><i></i></view>
+    </view>
+  </view>
+
+  <view class="nav-bar">
+    <view class="back" bindtap="goBack"><image src="{{icons.back}}"/></view>
+    <text class="title">数据与备份</text>
+    <view class="more"><i></i><i></i><i></i></view>
+  </view>
+
+  <scroll-view class="scroll" scroll-y>
+    <view style="height:30rpx"></view>
+
+    <view class="sync-card">
+      <view class="s-ic"><image src="{{icons.sync}}"/></view>
+      <view class="s-body">
+        <text class="s-title">{{cloudEnabled ? '已开启云端同步' : '仅本地备份'}}</text>
+        <text class="s-desc">{{lastSync ? (lastSync + ' 同步 · 本地 + 云端双备份') : '尚未同步 · 本地 + 云端双备份'}}</text>
+      </view>
+    </view>
+
+    <view class="block-title" style="margin-top:40rpx">
+      <text class="t">备份方式</text>
+    </view>
+
+    <view class="row form" style="margin-top:28rpx;min-height:104rpx">
+      <text class="label" style="width:auto">本地备份（本机）</text>
+      <view class="right"><view class="pill family">已开启</view></view>
+    </view>
+    <view class="row form" style="margin-top:28rpx;min-height:104rpx">
+      <text class="label" style="width:auto">云端备份（{{cloudEnabled ? '家庭数据湖' : '未启用'}}）</text>
+      <view class="right"><view class="pill {{cloudEnabled ? 'family' : 'brand'}}">{{cloudEnabled ? '已开启' : '未开启'}}</view></view>
+    </view>
+
+    <view class="block-title" style="margin-top:40rpx">
+      <text class="t">数据迁移</text>
+    </view>
+
+    <view class="row form" style="margin-top:28rpx" bindtap="exportData">
+      <text class="label" style="width:auto;flex:1;text-align:left">导出全部数据（JSON）</text>
+      <image class="chev" src="{{icons.chev}}"/>
+    </view>
+    <view class="row form" style="margin-top:28rpx" bindtap="toast" data-t="导入功能即将上线">
+      <text class="label" style="width:auto;flex:1;text-align:left">从备份导入</text>
+      <image class="chev" src="{{icons.chev}}"/>
+    </view>
+
+    <view class="btn-primary detail-btn" hover-class="btn-press" hover-stay-time="80" bindtap="syncNow">
+      <text class="btn-text">{{syncing ? '同步中…' : '立即同步'}}</text>
+    </view>
+    <view class="detail-foot"></view>
+  </scroll-view>
+</view>

@@ -1,0 +1,111 @@
+<view class="screen" style="{{themeStyle}}">
+  <view class="status-bar">
+    <text class="time">9:41</text>
+    <view class="status-icons">
+      <view class="signal"><i></i><i></i><i></i><i></i></view>
+      <view class="wifi"></view>
+      <view class="bat"><i></i></view>
+    </view>
+  </view>
+
+  <view class="nav-bar">
+    <view class="back" bindtap="goBack"><image src="{{icons.back}}"/></view>
+    <text class="title">编辑待办</text>
+    <view class="more"><i></i><i></i><i></i></view>
+  </view>
+
+  <scroll-view class="scroll" scroll-y>
+    <view style="height:30rpx"></view>
+
+    <view class="input-card">
+      <text class="lbl">标题</text>
+      <input class="val-input" value="{{form.title}}" bindinput="onTitle" placeholder="待办标题" placeholder-class="ph"/>
+    </view>
+
+    <view class="input-card space-card" style="margin-top:28rpx">
+      <text class="lbl">归属空间</text>
+      <view class="space-rows">
+        <view class="space-item">
+          <view class="si-left">
+            <view class="dot brand"></view>
+            <view class="si-text">
+              <text class="si-name">个人空间</text>
+              <text class="si-desc">默认 · 仅自己可见</text>
+            </view>
+          </view>
+          <view class="si-badge">默认</view>
+        </view>
+        <view class="space-line"></view>
+        <view class="space-item tapt" bindtap="toggleShare">
+          <view class="si-left">
+            <view class="dot family"></view>
+            <view class="si-text">
+              <text class="si-name">共享到家庭空间</text>
+              <text class="si-desc">开启后成员可在家庭空间查看</text>
+            </view>
+          </view>
+          <view class="switch {{shared?'on':''}}"><view class="knob"></view></view>
+        </view>
+      </view>
+    </view>
+
+    <view class="input-card" style="margin-top:28rpx">
+      <text class="lbl">标签（可选）</text>
+      <input class="val-input" value="{{form.tag}}" bindinput="onTag" placeholder="如：重复 / 账单 / 家庭，也可自定义" placeholder-class="ph"/>
+      <view class="tag-chips">
+        <view wx:for="{{tagChips}}" wx:key="*this"
+              class="tag-chip {{form.tag === item ? 'active' : ''}}" bindtap="pickChip" data-t="{{item}}">{{item}}</view>
+        <view wx:if="{{form.tag}}" class="tag-chip clear" bindtap="clearChip">清除</view>
+      </view>
+    </view>
+
+    <picker mode="date" value="{{datePart}}" bindchange="onDate">
+      <view class="row form" style="margin-top:28rpx">
+        <text class="label" style="width:auto">日期</text>
+        <text class="value">{{datePart || '未设置'}}</text>
+        <image class="chev" src="{{icons.chev}}"/>
+      </view>
+    </picker>
+    <picker mode="time" value="{{timePart}}" bindchange="onTime">
+      <view class="row form" style="margin-top:28rpx">
+        <text class="label" style="width:auto">时间</text>
+        <text class="value">{{timePart || '全天'}}</text>
+        <image class="chev" src="{{icons.chev}}"/>
+      </view>
+    </picker>
+
+    <view class="input-card" style="margin-top:28rpx">
+      <text class="lbl">备注</text>
+      <input class="val-input" value="{{form.meta}}" bindinput="onMeta" placeholder="时间 / 关联物品等" placeholder-class="ph"/>
+    </view>
+
+    <view class="photo-head" style="margin-top:30rpx">
+      <text class="t">照片（选填）</text>
+      <text class="s">{{photos.length}} 张</text>
+    </view>
+    <view class="photo-grid" style="margin-top:20rpx">
+      <block wx:for="{{photos}}" wx:key="index">
+        <view class="ph" style="position:relative">
+          <image src="{{item.url}}" mode="aspectFill" style="width:100%;height:100%;border-radius:24rpx"/>
+          <view class="del" catchtap="removePhoto" data-idx="{{index}}">×</view>
+        </view>
+      </block>
+      <view class="add" bindtap="chooseImage">
+        <view class="plus"></view>
+        <text class="t">添加照片</text>
+      </view>
+    </view>
+
+    <view class="edit-foot"></view>
+  </scroll-view>
+
+  <view class="action-bar">
+    <view class="btn-ghost danger tapt" bindtap="remove">
+      <image class="ab-ic" src="{{icons.trash}}"/>
+      <text class="ab-t">删除</text>
+    </view>
+    <view class="btn-primary ab-save tapt" bindtap="save">
+      <text class="btn-text">保存</text>
+    </view>
+  </view>
+</view>

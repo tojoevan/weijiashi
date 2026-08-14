@@ -1,0 +1,28 @@
+name = "jiashiben-api"
+main = "src/index.js"
+compatibility_date = "2024-09-23"
+
+# Worker 绑定到「中间层组件」域名（独立、非备案，部署在 Cloudflare）。
+# 该域名（如 your-cloudflare-domain.example.com）即境内 relay 反向代理的目标；它不暴露给微信，
+# 微信小程序只访问 your-gateway-domain.example.com（备案域名）。两者解耦，备案审计只看到境内服务器。
+# 请替换为你实际的 Cloudflare 中间层域名（须为非备案域名）：
+routes = [
+  { pattern = "your-cloudflare-domain.example.com", custom_domain = true }
+]
+
+# D1 数据库（部署前先 `wrangler d1 create jiashiben`，把返回的 id 填到下面）
+[[d1_databases]]
+binding = "DB"
+database_name = "jiashiben"
+database_id = "REPLACE_WITH_D1_ID"
+
+# R2 图片桶（部署前先 `wrangler r2 bucket create jiashiben-images`）
+[[r2_buckets]]
+binding = "BUCKET"
+bucket_name = "jiashiben-images"
+
+# 以下敏感信息用 secret 注入，不要写进此文件：
+#   wrangler secret put APP_ID
+#   wrangler secret put APP_SECRET
+#   wrangler secret put AUTH_SECRET   # 任意长随机串，用作会话令牌签名
+#   wrangler secret put INTERNAL_KEY  # relay 与 Worker 之间的内部密钥，须与前端 config.INTERNAL_KEY 一致

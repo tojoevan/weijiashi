@@ -1,0 +1,93 @@
+/* 编辑页专属样式（复用全局 input-card / btn-primary / dot） */
+
+/* 输入 */
+.input-card .val-input {
+  font-size: 32rpx;
+  font-weight: 500;
+  color: var(--text-primary);
+  margin-top: 8rpx;
+  width: 100%;
+}
+.input-card .ph { color: var(--text-tertiary); font-weight: 400; }
+
+/* 标签快捷选择胶囊（与新建页一致） */
+.tag-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 16rpx;
+  margin-top: 20rpx;
+}
+.tag-chip {
+  padding: 12rpx 28rpx;
+  font-size: 26rpx;
+  color: var(--text-secondary);
+  background: var(--bg-canvas);
+  border: 2rpx solid var(--border-subtle);
+  border-radius: 999rpx;
+  line-height: 1.2;
+}
+.tag-chip.active {
+  color: var(--on-brand);
+  background: var(--brand);
+  border-color: var(--brand);
+}
+.tag-chip.clear {
+  color: var(--text-tertiary);
+  background: transparent;
+  border-style: dashed;
+}
+
+/* 空间卡 */
+.space-card { padding-bottom: 14rpx; }
+.space-rows { margin-top: 6rpx; }
+.space-item {
+  display: flex; align-items: center; justify-content: space-between;
+  min-height: 92rpx;
+}
+.space-line { height: 2rpx; background: var(--border-subtle); margin: 2rpx 0; }
+.si-left { display: flex; align-items: center; gap: 20rpx; min-width: 0; }
+.si-text { display: flex; flex-direction: column; gap: 4rpx; min-width: 0; }
+.si-name { font-size: 28rpx; font-weight: 500; color: var(--text-primary); }
+.si-desc { font-size: 22rpx; color: var(--text-tertiary); }
+.si-badge {
+  font-size: 22rpx; color: var(--text-secondary);
+  background: var(--surface-muted); border-radius: var(--r-pill);
+  padding: 6rpx 20rpx; flex-shrink: 0;
+}
+.space-card .dot { width: 16rpx; height: 16rpx; border-radius: 50%; flex-shrink: 0; }
+.space-card .dot.brand { background: var(--brand); }
+.space-card .dot.family { background: var(--family); }
+
+/* 开关 */
+.switch {
+  width: 92rpx; height: 52rpx; border-radius: 200rpx;
+  background: var(--border-strong); position: relative;
+  transition: background .22s; flex-shrink: 0;
+}
+.switch.on { background: var(--family); }
+.switch .knob {
+  position: absolute; top: 4rpx; left: 4rpx;
+  width: 44rpx; height: 44rpx; border-radius: 50%;
+  background: #fff; box-shadow: 0 2rpx 6rpx rgba(0,0,0,.18);
+  transition: left .22s;
+}
+.switch.on .knob { left: 44rpx; }
+
+/* 底部操作栏 */
+.action-bar {
+  position: fixed; left: 0; right: 0; bottom: 0; z-index: 20;
+  display: flex; align-items: center; gap: 24rpx;
+  padding: 22rpx 40rpx calc(22rpx + env(safe-area-inset-bottom));
+  background: var(--surface);
+  border-top: 2rpx solid var(--border-subtle);
+  flex-shrink: 0;
+}
+.edit-foot { height: 180rpx; }
+.btn-ghost.danger {
+  display: flex; align-items: center; justify-content: center; gap: 12rpx;
+  height: 96rpx; padding: 0 40rpx; flex-shrink: 0;
+  background: var(--surface-muted); border-radius: var(--r-btn);
+}
+.btn-ghost.danger .ab-ic { width: 32rpx; height: 32rpx; }
+.btn-ghost.danger .ab-t { font-size: 30rpx; font-weight: 500; color: var(--danger); }
+.action-bar .btn-primary.ab-save { flex: 1; margin: 0; }

@@ -1,0 +1,20 @@
+# ===== 微信开发者工具本地配置（含真实 AppID / 私有设置，勿提交）=====
+project.config.json
+project.private.config.json
+
+# ===== 内部维护文档（非项目交付物）=====
+发布维护备忘录.md
+
+# ===== 依赖 =====
+node_modules/
+**/node_modules/
+
+# ===== 密钥 / 本地环境变量 =====
+.env
+.env.local
+*.local
+
+# ===== 系统 / 编辑器 =====
+.DS_Store
+Thumbs.db
+*.log

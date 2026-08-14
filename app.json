@@ -1,0 +1,28 @@
+{
+  "pages": [
+    "pages/today/today",
+    "pages/tasks/tasks",
+    "pages/archive/archive",
+    "pages/mine/mine",
+    "pages/archive-detail/archive-detail",
+    "pages/add-record/add-record",
+    "pages/new-task/new-task",
+    "pages/backup/backup",
+    "pages/family/family",
+    "pages/membership/membership",
+    "pages/tag/tag",
+    "pages/about/about",
+    "pages/theme/theme",
+    "pages/edit/edit",
+    "pages/search/search"
+  ],
+  "window": {
+    "navigationStyle": "custom",
+    "backgroundColor": "#FAFAF7",
+    "backgroundTextStyle": "dark",
+    "navigationBarTextStyle": "black"
+  },
+  "style": "v2",
+  "lazyCodeLoading": "requiredComponents",
+  "sitemapLocation": "sitemap.json"
+}

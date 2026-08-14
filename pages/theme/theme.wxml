@@ -1,0 +1,40 @@
+<view class="screen" style="{{themeStyle}}">
+  <view class="status-bar">
+    <text class="time">9:41</text>
+    <view class="status-icons">
+      <view class="signal"><i></i><i></i><i></i><i></i></view>
+      <view class="wifi"></view>
+      <view class="bat"><i></i></view>
+    </view>
+  </view>
+
+  <view class="nav-bar">
+    <view class="back" bindtap="goBack"><image src="{{icons.back}}"/></view>
+    <text class="title">主题设置</text>
+    <view class="more"><i></i><i></i><i></i></view>
+  </view>
+
+  <scroll-view class="scroll" scroll-y>
+    <view style="height:30rpx"></view>
+
+    <view class="section-title">
+      <text class="t">选择色调</text>
+      <text class="a">随选随生效</text>
+    </view>
+
+    <view class="theme-list">
+      <view class="theme-opt {{item.id===active?'active':''}}" wx:for="{{themes}}" wx:key="id" bindtap="pick" data-id="{{item.id}}">
+        <view class="swatches">
+          <view class="sw" style="background:{{item.brand}}"></view>
+          <view class="sw" style="background:{{item.family}}"></view>
+        </view>
+        <text class="to-name">{{item.name}}</text>
+        <view class="to-check" wx:if="{{item.id===active}}"><image src="{{icons.checkW}}"/></view>
+      </view>
+    </view>
+
+    <view class="theme-note">切换色调会同步改变整页背景、卡片描边与强调色，使整体氛围协调统一。设置自动保存。</view>
+
+    <view style="height:120rpx"></view>
+  </scroll-view>
+</view>

@@ -1,0 +1,56 @@
+<view class="screen" style="{{themeStyle}}">
+  <view class="status-bar"></view>
+  <view class="nav-gap"></view>
+
+  <view class="search-header">
+    <view class="sh-box">
+      <image class="sh-ic" src="{{icons.search}}"/>
+      <input class="sh-input" value="{{keyword}}" placeholder="搜索待办、事务、档案、成员"
+             placeholder-class="sh-ph" bindinput="onInput" confirm-type="search" focus="{{true}}"/>
+      <view wx:if="{{keyword}}" class="sh-clear tapt" bindtap="clear">
+        <text class="sh-x">✕</text>
+      </view>
+    </view>
+    <text class="sh-cancel tapt" bindtap="goBack">取消</text>
+  </view>
+
+  <scroll-view class="scroll" scroll-y>
+    <!-- 未输入：引导 -->
+    <view wx:if="{{!keyword}}" class="empty">
+      <text class="e-emoji">🔍</text>
+      <text class="e-title">全局搜索</text>
+      <text class="e-sub">输入关键词，跨待办 / 事务 / 档案 / 成员查找</text>
+    </view>
+
+    <!-- 无结果 -->
+    <view wx:elif="{{total === 0}}" class="empty">
+      <text class="e-emoji">🔍</text>
+      <text class="e-title">没有找到「{{keyword}}」</text>
+      <text class="e-sub">换个关键词试试</text>
+    </view>
+
+    <!-- 结果分组 -->
+    <block wx:else>
+      <view wx:for="{{groups}}" wx:key="type" wx:for-item="grp">
+        <view wx:if="{{grp.items.length}}" class="result-group">
+          <view class="rg-head">
+            <text class="rg-title">{{grp.label}}</text>
+            <text class="rg-count">{{grp.items.length}}</text>
+          </view>
+          <view wx:for="{{grp.items}}" wx:key="id" wx:for-item="it"
+                class="result-row tapt" bindtap="openItem" data-url="{{it.navUrl}}">
+            <view class="dot {{it.dot}}"></view>
+            <view class="rr-body">
+              <text class="rr-title">{{it.title}}</text>
+              <text wx:if="{{it.subtitle}}" class="rr-sub">{{it.subtitle}}</text>
+            </view>
+            <view wx:if="{{it.tag}}" class="rr-tag">{{it.tag}}</view>
+            <image class="rr-chev" src="{{icons.chev}}"/>
+          </view>
+          <view style="height:30rpx"></view>
+        </view>
+      </view>
+      <view style="height:60rpx"></view>
+    </block>
+  </scroll-view>
+</view>

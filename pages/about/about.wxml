@@ -1,0 +1,50 @@
+<view class="screen" style="{{themeStyle}}">
+  <view class="status-bar">
+    <text class="time">9:41</text>
+    <view class="status-icons">
+      <view class="signal"><i></i><i></i><i></i><i></i></view>
+      <view class="wifi"></view>
+      <view class="bat"><i></i></view>
+    </view>
+  </view>
+
+  <view class="nav-bar">
+    <view class="back" bindtap="goBack"><image src="{{icons.back}}"/></view>
+    <text class="title">关于微家事</text>
+    <view class="more"><i></i><i></i><i></i></view>
+  </view>
+
+  <scroll-view class="scroll" scroll-y>
+    <view style="height:40rpx"></view>
+
+    <view style="margin:0 40rpx;background:var(--surface);border:2rpx solid var(--border-subtle);border-radius:40rpx;padding:48rpx 32rpx;display:flex;flex-direction:column;align-items:center;gap:14rpx">
+      <view style="width:112rpx;height:112rpx;border-radius:32rpx;background:var(--brand);display:flex;align-items:center;justify-content:center;color:#fff;font-size:52rpx;font-weight:600">家</view>
+      <text style="font-size:36rpx;font-weight:600;color:var(--text-primary)">微家事</text>
+      <text style="font-size:24rpx;color:var(--text-tertiary)">家庭事务与物品档案的轻量管理</text>
+    </view>
+
+    <view style="height:30rpx"></view>
+
+    <view class="menu-row form" style="margin:0 40rpx">
+      <text class="m-txt">当前版本</text>
+      <text style="margin-left:auto;font-size:26rpx;color:var(--text-tertiary)">1.0.0</text>
+    </view>
+    <view style="height:24rpx"></view>
+    <view class="menu-row form" style="margin:0 40rpx">
+      <text class="m-txt">设计稿规格</text>
+      <text style="margin-left:auto;font-size:26rpx;color:var(--text-tertiary)">375 × 812</text>
+    </view>
+    <view style="height:24rpx"></view>
+    <view class="menu-row form" style="margin:0 40rpx">
+      <text class="m-txt">数据同步</text>
+      <text style="margin-left:auto;font-size:26rpx;color:var(--text-tertiary)">已同步云端</text>
+    </view>
+    <view style="height:24rpx"></view>
+    <view class="menu-row form" style="margin:0 40rpx" bindtap="toast" data-t="已是最新版本">
+      <text class="m-txt">检查更新</text>
+      <image class="m-chev" src="{{icons.chev}}"/>
+    </view>
+
+    <view style="height:200rpx"></view>
+  </scroll-view>
+</view>

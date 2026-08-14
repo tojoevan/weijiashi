@@ -1,0 +1,57 @@
+<view class="screen" style="{{themeStyle}}">
+  <view class="status-bar">
+    <text class="time">9:41</text>
+    <view class="status-icons">
+      <view class="signal"><i></i><i></i><i></i><i></i></view>
+      <view class="wifi"></view>
+      <view class="bat"><i></i></view>
+    </view>
+  </view>
+
+  <view class="nav-bar">
+    <view class="back" bindtap="goBack"><image src="{{icons.back}}"/></view>
+    <text class="title">档案详情</text>
+    <view class="more"><i></i><i></i><i></i></view>
+  </view>
+
+  <scroll-view class="scroll" scroll-y wx:if="{{item}}">
+    <view style="height:30rpx"></view>
+
+    <view class="item-photo" wx:if="{{photos.length === 0}}"></view>
+    <image wx:else class="item-photo" src="{{photos[0]}}" mode="aspectFill"/>
+
+    <view class="name-row" style="margin-top:24rpx">
+      <text class="nm">{{item.payload.name}}</text>
+      <view class="pill {{item.shared ? 'family' : 'brand'}}">{{item.shared ? '家庭' : '个人'}}</view>
+    </view>
+    <text style="display:block;padding:12rpx 40rpx 0;font-size:24rpx;color:var(--text-tertiary)">{{item.type || '物品'}}{{item.payload.buyDate ? ' · ' + item.payload.buyDate + ' 购入' : ''}}</text>
+
+    <view class="info-card" style="margin-top:30rpx">
+      <view class="info-row"><text class="il">购入日期</text><text class="iv">{{item.payload.buyDate || '—'}}</text></view>
+      <view class="info-row line"><text class="il">保修到期</text><text class="iv">{{item.payload.warrantyEnd || '—'}}</text></view>
+      <view class="info-row line"><text class="il">金额</text><text class="iv">{{item.payload.amount ? '¥' + item.payload.amount : '—'}}</text></view>
+    </view>
+
+    <view class="note-card" style="margin-top:30rpx" wx:if="{{item.payload.note}}">
+      <text class="lbl">备注</text>
+      <text class="txt" style="display:block;margin-top:12rpx">{{item.payload.note}}</text>
+    </view>
+
+    <view class="photo-head" style="margin-top:30rpx" wx:if="{{photos.length > 0}}">
+      <text class="t">照片存档</text>
+      <text class="s">{{photos.length}} 张</text>
+    </view>
+    <view class="photo-grid" style="margin-top:20rpx" wx:if="{{photos.length > 0}}">
+      <block wx:for="{{photos}}" wx:key="*this">
+        <image class="ph" src="{{item}}" mode="aspectFill"/>
+      </block>
+    </view>
+
+    <view class="btn-primary detail-btn" bindtap="share">
+      <text class="btn-text">{{item.shared ? '已在家庭空间' : '分享到家庭空间'}}</text>
+    </view>
+    <view class="detail-foot"></view>
+  </scroll-view>
+
+  <view wx:else style="padding:120rpx 40rpx;text-align:center;color:var(--text-tertiary)">档案加载中…</view>
+</view>

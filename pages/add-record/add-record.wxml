@@ -1,0 +1,74 @@
+<view class="screen" style="{{themeStyle}}">
+  <view class="status-bar">
+    <text class="time">9:41</text>
+    <view class="status-icons">
+      <view class="signal"><i></i><i></i><i></i><i></i></view>
+      <view class="wifi"></view>
+      <view class="bat"><i></i></view>
+    </view>
+  </view>
+
+  <view class="nav-bar">
+    <view class="back" bindtap="goBack"><image src="{{icons.back}}"/></view>
+    <text class="title">添加档案</text>
+    <view class="more"><i></i><i></i><i></i></view>
+  </view>
+
+  <scroll-view class="scroll" scroll-y>
+    <view style="height:30rpx"></view>
+
+    <view class="row form">
+      <text class="label" style="width:auto">物品名称</text>
+      <input class="value" style="text-align:right" placeholder="如：客厅空调" value="{{name}}" bindinput="onName"/>
+    </view>
+    <view class="row form" style="margin-top:28rpx">
+      <text class="label" style="width:auto">类别</text>
+      <picker mode="selector" range="{{types}}" value="{{typeIndex}}" bindchange="onType">
+        <view class="value">{{types[typeIndex]}}<image class="chev" src="{{icons.chev}}"/></view>
+      </picker>
+    </view>
+    <view class="row form" style="margin-top:28rpx">
+      <text class="label" style="width:auto">购入日期</text>
+      <picker mode="date" value="{{buyDate}}" bindchange="onBuyDate">
+        <view class="value">{{buyDate || '请选择'}}<image class="chev" src="{{icons.chev}}"/></view>
+      </picker>
+    </view>
+    <view class="row form" style="margin-top:28rpx">
+      <text class="label" style="width:auto">保修到期</text>
+      <picker mode="date" value="{{warrantyEnd}}" bindchange="onWarrantyEnd">
+        <view class="value">{{warrantyEnd || '请选择'}}<image class="chev" src="{{icons.chev}}"/></view>
+      </picker>
+    </view>
+    <view class="row form" style="margin-top:28rpx">
+      <text class="label" style="width:auto">金额（元）</text>
+      <input class="value" style="text-align:right" type="digit" placeholder="选填" value="{{amount}}" bindinput="onAmount"/>
+    </view>
+
+    <view class="note-card" style="margin-top:28rpx">
+      <text class="lbl">备注</text>
+      <textarea class="txt" style="width:100%;height:120rpx;margin-top:12rpx" placeholder="型号 / 服务商 / 注意事项…" value="{{note}}" bindinput="onNote"/>
+    </view>
+
+    <view class="photo-head">
+      <text class="t">照片存档</text>
+      <text class="s">发票 · 保修卡 · 凭证（选填）</text>
+    </view>
+    <view class="photo-grid" style="margin-top:20rpx">
+      <block wx:for="{{previews}}" wx:key="*this">
+        <view class="ph" style="position:relative">
+          <image src="{{item}}" mode="aspectFill" style="width:100%;height:100%;border-radius:16rpx"/>
+          <view class="del" catchtap="removePreview" data-idx="{{index}}">×</view>
+        </view>
+      </block>
+      <view class="add" bindtap="chooseImage">
+        <view class="plus"></view>
+        <text class="t">添加照片</text>
+      </view>
+    </view>
+
+    <view class="btn-primary detail-btn" bindtap="save">
+      <text class="btn-text">{{saving ? '保存中…' : '保存档案'}}</text>
+    </view>
+    <view class="detail-foot"></view>
+  </scroll-view>
+</view>

@@ -1,0 +1,37 @@
+<view class="screen" style="{{themeStyle}}">
+  <view class="status-bar">
+    <text class="time">9:41</text>
+    <view class="status-icons">
+      <view class="signal"><i></i><i></i><i></i><i></i></view>
+      <view class="wifi"></view>
+      <view class="bat"><i></i></view>
+    </view>
+  </view>
+
+  <view class="nav-bar">
+    <view class="back" bindtap="goBack"><image src="{{icons.back}}"/></view>
+    <text class="title">标签管理</text>
+    <view class="more"><i></i><i></i><i></i></view>
+  </view>
+
+  <scroll-view class="scroll" scroll-y>
+    <view style="height:30rpx"></view>
+
+    <view class="section-title" style="margin:0 40rpx">
+      <text class="t">常用标签</text>
+      <text class="a">自动归集自待办</text>
+    </view>
+    <view style="height:24rpx"></view>
+
+    <block wx:for="{{tags}}" wx:key="name">
+      <view class="menu-row form" style="margin:0 40rpx">
+        <view style="width:14rpx;height:14rpx;border-radius:50%;background:{{item.color}}"></view>
+        <text class="m-txt">{{item.name}}</text>
+        <text style="margin-left:auto;font-size:24rpx;color:var(--text-tertiary)">{{item.count}} 项</text>
+      </view>
+      <view style="height:24rpx"></view>
+    </block>
+
+    <view style="height:200rpx"></view>
+  </scroll-view>
+</view>

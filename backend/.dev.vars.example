@@ -1,0 +1,13 @@
+# 本地开发用环境变量（Wrangler 读取 .dev.vars）。
+# 生产环境请用 `wrangler secret put <NAME>` 注入，切勿提交真实值。
+# 复制本文件为 .dev.vars 后填入你的取值。
+
+# 微信小程序 AppID / AppSecret（mp.weixin.qq.com → 开发设置）
+APP_ID=your-wechat-appid
+APP_SECRET=your-wechat-appsecret
+
+# 任意长随机串，用作会话令牌签名
+AUTH_SECRET=change-me-long-random-string
+
+# relay 与 Worker 之间的内部密钥，须与前端 utils/sync/config.js 的 INTERNAL_KEY 一致
+INTERNAL_KEY=change-me-internal-key

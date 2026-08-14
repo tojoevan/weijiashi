@@ -1,0 +1,65 @@
+/* 搜索页 */
+/* 顶部搜索栏：位于微信胶囊正下方（.nav-gap 让出胶囊行），
+   既不被右上角胶囊遮挡，输入框在顶部弹键盘时也不会被输入法遮盖 */
+.nav-gap { height: 88rpx; flex-shrink: 0; }
+.search-header {
+  display: flex; align-items: center; gap: 20rpx;
+  padding: 16rpx 28rpx 20rpx;
+  flex-shrink: 0;
+  background: var(--bg-canvas);
+}
+.sh-box {
+  flex: 1; display: flex; align-items: center; gap: 16rpx;
+  height: 80rpx; padding: 0 24rpx;
+  background: var(--surface); border: 2rpx solid var(--border-subtle);
+  border-radius: var(--r-pill);
+}
+.sh-ic { width: 32rpx; height: 32rpx; flex-shrink: 0; }
+.sh-input { flex: 1; font-size: 28rpx; color: var(--text-primary); }
+.sh-ph { color: var(--text-tertiary); font-size: 26rpx; }
+.sh-clear {
+  width: 44rpx; height: 44rpx; border-radius: 50%;
+  background: var(--border-subtle);
+  display: flex; align-items: center; justify-content: center; flex-shrink: 0;
+}
+.sh-x { font-size: 24rpx; color: var(--text-secondary); line-height: 1; }
+.sh-cancel { font-size: 28rpx; color: var(--text-secondary); flex-shrink: 0; }
+
+/* 结果列表底部留白 */
+.scroll { padding-bottom: 60rpx; }
+
+.empty {
+  display: flex; flex-direction: column; align-items: center; gap: 16rpx;
+  padding: 160rpx 60rpx; text-align: center;
+}
+.empty .e-emoji { font-size: 80rpx; }
+.empty .e-title { font-size: 30rpx; font-weight: 500; color: var(--text-primary); }
+.empty .e-sub { font-size: 24rpx; color: var(--text-tertiary); line-height: 36rpx; }
+
+.result-group { margin: 0 40rpx; }
+.rg-head { display: flex; align-items: center; gap: 12rpx; padding: 20rpx 0 16rpx; }
+.rg-title { font-size: 26rpx; font-weight: 600; color: var(--text-secondary); letter-spacing: 1rpx; }
+.rg-count {
+  font-size: 20rpx; color: var(--text-tertiary);
+  background: var(--surface-muted); border-radius: 999rpx; padding: 2rpx 14rpx;
+}
+.result-row {
+  display: flex; align-items: center; gap: 22rpx;
+  background: var(--surface);
+  border: 2rpx solid var(--border-subtle);
+  border-radius: var(--r-card);
+  padding: 0 28rpx; min-height: 124rpx;
+  margin-bottom: 20rpx;
+}
+.result-row .dot { width: 14rpx; height: 14rpx; border-radius: 50%; flex-shrink: 0; }
+.result-row .dot.brand { background: var(--brand); }
+.result-row .dot.family { background: var(--family); }
+.rr-body { flex: 1; display: flex; flex-direction: column; gap: 8rpx; min-width: 0; }
+.rr-title { font-size: 28rpx; font-weight: 500; color: var(--text-primary); }
+.rr-sub { font-size: 23rpx; color: var(--text-tertiary); }
+.rr-tag {
+  flex-shrink: 0; background: var(--surface-muted);
+  border-radius: var(--r-chip); padding: 0 18rpx; height: 44rpx;
+  display: flex; align-items: center; font-size: 21rpx; font-weight: 500; color: var(--text-secondary);
+}
+.rr-chev { width: 16rpx; height: 28rpx; flex-shrink: 0; }
