@@ -1,0 +1,12 @@
+{
+  "name": "jiashiben",
+  "version": "0.1.5",
+  "description": "微家事 · 个人与家庭待办清单小程序",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "lint": "node scripts/lint-wxss-conflicts.mjs --strict",
+    "test": "node scripts/regression-check.mjs",
+    "preflight": "npm run lint && npm run test"
+  }
+}

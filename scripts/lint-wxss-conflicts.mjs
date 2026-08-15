@@ -20,8 +20,9 @@
 import fs from 'node:fs';
 import path from 'node:path';
 
-const root = process.argv[2] || process.cwd();
-const strict = process.argv.includes('--strict');
+const args = process.argv.slice(2);
+const strict = args.includes('--strict');
+const root = args.find((a) => !a.startsWith('--')) || process.cwd();
 
 const appWxss = path.join(root, 'app.wxss');
 if (!fs.existsSync(appWxss)) {
