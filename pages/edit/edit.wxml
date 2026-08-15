@@ -99,7 +99,7 @@
     <view class="edit-foot"></view>
   </scroll-view>
 
-  <view class="action-bar">
+  <view class="edit-actions">
     <view class="btn-ghost danger tapt" bindtap="remove">
       <image class="ab-ic" src="{{icons.trash}}"/>
       <text class="ab-t">删除</text>

@@ -73,8 +73,8 @@
 }
 .switch.on .knob { left: 44rpx; }
 
-/* 底部操作栏 */
-.action-bar {
+/* 底部操作栏（独立命名，避免与全局 .action-bar 冲突导致整体左移越界） */
+.edit-actions {
   position: fixed; left: 0; right: 0; bottom: 0; z-index: 20;
   display: flex; align-items: center; gap: 24rpx;
   padding: 22rpx 40rpx calc(22rpx + env(safe-area-inset-bottom));
@@ -90,4 +90,4 @@
 }
 .btn-ghost.danger .ab-ic { width: 32rpx; height: 32rpx; }
 .btn-ghost.danger .ab-t { font-size: 30rpx; font-weight: 500; color: var(--danger); }
-.action-bar .btn-primary.ab-save { flex: 1; margin: 0; }
+.edit-actions .btn-primary.ab-save { flex: 1; margin: 0; }
