@@ -43,6 +43,11 @@ function ruleBlockOf(src, selector) {
   }
   return src.slice(m.index + m[0].length, i - 1);
 }
+/** app.wxss 等全局样式中是否声明了某 CSS 变量（--name: value;） */
+function tokenDefined(src, name) {
+  const safe = name.replace(/-/g, '\\-');
+  return new RegExp('--' + safe + '\\s*:').test(src);
+}
 
 console.log('\n微家事 · 前端回归断言（布局类 bug 防回归）');
 
@@ -72,6 +77,34 @@ if (ab) {
   assert(/translateX/.test(ab), '.action-bar 保留 transform:translateX 居中逻辑（设计意图，勿删）');
 }
 assert(!/\.edit-actions\s*\{/.test(appWxss), 'app.wxss 未全局重定义 .edit-actions（防同名冲突回退）');
+
+// ===== 家庭页 family：设计审计发现的潜在问题（门禁盲区，0.1.6 清理）=====
+// 背景：lint --strict 只能拦「带定位属性的同名类冲突」，对「颜色 / 变量类」
+// 问题无效。以下两条从设计审计（2026-08-15）固化，补该盲区。当前（0.1.5）
+// 这两处均为「潜在代码质量缺陷、非用户可见 bug」，故断言现在会报红，逼 0.1.6
+// 落地修复后再转绿。
+console.log('\n[家庭页 family · 设计审计固化]');
+const familyWxss = read('pages/family/family.wxss');
+
+const ib = ruleBlockOf(familyWxss, 'invite-banner');
+assert(ib !== null, 'family.wxss 中 .invite-banner 类存在');
+if (ib) {
+  // 引用了未定义 token 即视为缺陷：要么在 app.wxss 定义 --brand-border，
+  // 要么改用真实 token（如 --border-strong）。两种合法修法本断言都放过。
+  if (/--brand-border/.test(ib) && !tokenDefined(appWxss, 'brand-border')) {
+    assert(false, '.invite-banner 引用了 app.wxss 未定义的 --brand-border（请在 app.wxss 定义该 token，或改用 --border-strong 等真实 token）');
+  } else {
+    assert(true, '.invite-banner 未引用未定义 token（已定义或已改用真实 token）');
+  }
+}
+
+const mf = ruleBlockOf(familyWxss, 'member-row .avatar.family');
+assert(mf !== null, 'family.wxss 中 .member-row .avatar.family 规则存在');
+if (mf) {
+  // app.wxss 定义的 --family 为 #7A8471（苔绿）；fallback 误写成蓝绿 #7BA7BC 错色
+  assert(!/#7BA7BC/i.test(mf),
+    '.avatar.family 的 --family fallback 不得为错误色 #7BA7BC（应为 #7A8471 苔绿）');
+}
 
 // ===== 汇总 =====
 if (failures > 0) {
