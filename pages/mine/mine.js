@@ -2,6 +2,7 @@ const theme = require("../../utils/theme.js");
 const icons = require('../../utils/icons.js');
 const sync = require('../../utils/sync/index.js');
 const profile = require('../../utils/profile.js');
+const { inSpace } = require('../../utils/space.js');
 
 Page({
   data: {
@@ -34,12 +35,13 @@ Page({
   },
   // 统计来自真实数据：待办数 / 档案条目数 / 事务记录条数
   loadStats() {
+    const space = getApp().globalData.space;
     Promise.all([sync.getTodos(), sync.getArchive(), sync.getSections()])
       .then(([todos, archive, sections]) => {
-        const todo = (todos || []).length;
-        const archiveN = (archive || []).length;
+        const todo = (todos || []).filter(t => inSpace(t, space)).length;
+        const archiveN = (archive || []).filter(a => inSpace(a, space)).length;
         const record = (sections || []).reduce(
-          (sum, sec) => sum + ((sec && sec.items) ? sec.items.length : 0), 0
+          (sum, sec) => sum + ((sec && sec.items) ? sec.items.filter(it => inSpace(it, space)).length : 0), 0
         );
         this.setData({ stats: { todo, archive: archiveN, record } });
       })

@@ -19,7 +19,7 @@
 
 .member-row .avatar.img { width: 84rpx; height: 84rpx; border-radius: 50%; }
 .member-row .avatar.self { background: var(--brand); color: var(--on-brand, #fff); }
-.member-row .avatar.family { background: var(--family, #7BA7BC); color: #fff; }
+.member-row .avatar.family { background: var(--family, #7A8471); color: #fff; }
 
 .invite-share {
   margin: 28rpx 40rpx 0;

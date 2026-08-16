@@ -3,6 +3,7 @@ const icons = require('../../utils/icons.js');
 const store = require('../../utils/store.js');
 const sync = require('../../utils/sync/index.js');
 const profile = require('../../utils/profile.js');
+const { filterBySpace } = require('../../utils/space.js');
 
 const DISMISS_KEY = 'reminderDismissed';
 const TODO_KEY = 'js_todos_today';
@@ -99,23 +100,29 @@ Page({
     dateText: dateLabel(),
     greeting: greeting(),
     greetName: profile.displayName(),
-    todos: sync.mode === 'local' ? store.ensure(TODO_KEY, SEED_TODOS) : [],
-    visibleReminders: sync.mode === 'local' ? buildReminders(SEED_TODOS, {}, Date.now()) : []
+    todos: sync.mode === 'local' ? filterBySpace(store.ensure(TODO_KEY, SEED_TODOS), 'personal') : [],
+    visibleReminders: sync.mode === 'local' ? buildReminders(filterBySpace(SEED_TODOS, 'personal'), {}, Date.now()) : []
   },
   onShow() {
     this.setData({ themeStyle: theme.getThemeStyle() });
     this.setData({ dateText: dateLabel(), greeting: greeting(), greetName: profile.displayName() });
     const app = getApp();
-    this.setData({ space: app.globalData.space });
+    const space = app.globalData.space;
+    this.setData({ space });
     sync.getTodos().then((todos) => {
-      this.setData({ todos });
-      this.setData({ visibleReminders: buildReminders(todos, loadDismissed(), Date.now()) });
+      this._allTodos = todos;
+      const view = filterBySpace(todos, space);
+      this.setData({ todos: view });
+      this.setData({ visibleReminders: buildReminders(view, loadDismissed(), Date.now()) });
     });
   },
   setSpace(e) {
     const s = e.currentTarget.dataset.s;
     this.setData({ space: s });
     getApp().globalData.space = s;
+    const view = filterBySpace(this._allTodos || [], s);
+    this.setData({ todos: view });
+    this.setData({ visibleReminders: buildReminders(view, loadDismissed(), Date.now()) });
   },
   go(e) {
     const p = e.currentTarget.dataset.p;

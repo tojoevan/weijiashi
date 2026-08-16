@@ -1,5 +1,5 @@
-<view class="screen" style="{{themeStyle}}">
-  <!-- 状态栏 -->
+<view class="screen today-screen" style="{{themeStyle}}">
+  <!-- 状态栏(恢复原样) -->
   <view class="status-bar">
     <text class="time">9:41</text>
     <view class="status-icons">
@@ -11,8 +11,13 @@
 
   <scroll-view class="scroll" scroll-y>
     <view style="height:36rpx"></view>
-    <text class="h1" style="display:block;padding:0 40rpx;font-size:44rpx;font-weight:600;color:var(--text-primary)">{{greeting}}，{{greetName}}</text>
-    <text style="display:block;padding:12rpx 40rpx 0;font-size:26rpx;color:var(--text-tertiary)">{{dateText}} · 今天有 {{todos.length}} 件待办、{{visibleReminders.length}} 项即将到期</text>
+    <!-- 头部: 问候(恢复原始信息展示，仅换暖橙皮肤) -->
+    <view class="home-header">
+      <view class="header-text">
+        <text class="h1">{{greeting}}，{{greetName}}</text>
+        <text class="home-sub">{{dateText}} · 今天有 {{todos.length}} 件待办、{{visibleReminders.length}} 项即将到期</text>
+      </view>
+    </view>
 
     <!-- 空间切换 -->
     <view class="space-switch" style="margin-top:30rpx">
@@ -20,11 +25,11 @@
       <view class="space-seg {{space==='family'?'active':''}}" bindtap="setSpace" data-s="family"><view class="dot family"></view><text>家庭空间</text></view>
     </view>
 
-    <!-- 提醒卡 -->
+    <!-- 即将到期提醒 -->
     <block wx:for="{{visibleReminders}}" wx:key="id">
       <view class="reminder" style="margin-top:30rpx">
         <view class="r-top">
-          <image class="bell" src="{{icons.bell}}"/>
+          <image class="bell" src="{{icons.bell}}" />
           <view class="r-body">
             <text class="r-title">{{item.title}}</text>
             <text class="r-desc">{{item.desc}}</text>
@@ -38,7 +43,7 @@
       </view>
     </block>
 
-    <!-- 区块标题 -->
+    <!-- 待办区块 -->
     <view class="section-title" style="margin-top:30rpx">
       <text class="t">今日待办</text>
       <text class="a tapt" bindtap="go" data-p="tasks">全部 {{todos.length}}</text>
@@ -71,19 +76,19 @@
   <!-- 底部合并操作条（搜索 + 新建） -->
   <view class="action-bar">
     <view class="ab-search tapt" bindtap="goSearch">
-      <image src="{{icons.search}}"/>
+      <image src="{{icons.search}}" />
       <text class="ab-ph">搜索待办、事务、档案、成员</text>
     </view>
     <view class="ab-plus tapt" hover-class="fab-press" hover-stay-time="80" bindtap="goNewTask"><text>+</text></view>
   </view>
 
-  <!-- 底部胶囊导航 -->
+  <!-- 底部胶囊导航(恢复原标签) -->
   <view class="tabbar">
     <view class="capsule">
-      <view class="seg {{selected===0?'active':''}}" bindtap="go" data-p="today"><image class="ic" src="{{icons.tabToday}}"/><text class="lb">今天</text></view>
-      <view class="seg {{selected===1?'active':''}}" bindtap="go" data-p="tasks"><image class="ic" src="{{icons.tabTasks}}"/><text class="lb">事务</text></view>
-      <view class="seg {{selected===2?'active':''}}" bindtap="go" data-p="archive"><image class="ic" src="{{icons.tabArchive}}"/><text class="lb">档案</text></view>
-      <view class="seg {{selected===3?'active':''}}" bindtap="go" data-p="mine"><image class="ic" src="{{icons.tabMine}}"/><text class="lb">我的</text></view>
+      <view class="seg {{selected===0?'active':''}}" bindtap="go" data-p="today"><image class="ic" src="{{icons.tabToday}}" /><text class="lb">今天</text></view>
+      <view class="seg {{selected===1?'active':''}}" bindtap="go" data-p="tasks"><image class="ic" src="{{icons.tabTasks}}" /><text class="lb">事务</text></view>
+      <view class="seg {{selected===2?'active':''}}" bindtap="go" data-p="archive"><image class="ic" src="{{icons.tabArchive}}" /><text class="lb">档案</text></view>
+      <view class="seg {{selected===3?'active':''}}" bindtap="go" data-p="mine"><image class="ic" src="{{icons.tabMine}}" /><text class="lb">我的</text></view>
     </view>
   </view>
 </view>

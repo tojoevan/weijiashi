@@ -16,6 +16,7 @@
 
 import fs from 'node:fs';
 import path from 'node:path';
+import vm from 'node:vm';
 
 const root = process.argv[2] || process.cwd();
 let failures = 0;
@@ -105,6 +106,40 @@ if (mf) {
   assert(!/#7BA7BC/i.test(mf),
     '.avatar.family 的 --family fallback 不得为错误色 #7BA7BC（应为 #7A8471 苔绿）');
 }
+
+// ===== 空间过滤逻辑（功能层，防止「切空间不变内容」回归）=====
+// 以 vm 载入纯逻辑模块 utils/space.js（CJS，与小程序 require 同源），直接验证行为。
+console.log('\n[空间过滤 utils/space.js · 功能逻辑]');
+const spaceSrc = read('utils/space.js');
+const spaceMod = { exports: {} };
+vm.runInNewContext(spaceSrc, { module: spaceMod, exports: spaceMod.exports, console });
+const { filterBySpace, inSpace, isFamilyItem } = spaceMod.exports;
+
+// 样本：a=个人, b=家庭, c=仅 shared 标记的家庭, d=家庭(shared=false)
+const sample = [
+  { id: 'a', dot: 'brand' },
+  { id: 'b', dot: 'family' },
+  { id: 'c', dot: 'brand', shared: true },
+  { id: 'd', dot: 'family', shared: false }
+];
+assert(Array.isArray(filterBySpace(sample, 'family')), 'filterBySpace 返回数组');
+assert(filterBySpace(sample, 'family').length === 3,
+  '家庭空间含 dot==="family" 或 shared===true 的项（3 项）');
+assert(filterBySpace(sample, 'family').map((t) => t.id).sort().join() === 'b,c,d',
+  '家庭空间结果 = b,c,d');
+assert(filterBySpace(sample, 'family').every((t) => isFamilyItem(t)),
+  '家庭空间结果全部为家庭项（判定与 inSpace 一致）');
+assert(filterBySpace(sample, 'personal').length === 1, '个人空间取其余（1 项）');
+assert(filterBySpace(sample, 'personal').map((t) => t.id).join() === 'a',
+  '个人空间结果 = a');
+assert(filterBySpace(sample, undefined).length === 1, '空空间按个人处理');
+assert(filterBySpace(null, 'family').length === 0, '非数组输入返回空数组');
+
+assert(inSpace({ dot: 'family' }, 'family') === true, 'family 项在家庭空间 ∈ true');
+assert(inSpace({ dot: 'family' }, 'personal') === false, 'family 项在个人空间 ∈ false');
+assert(inSpace({ shared: true }, 'family') === true, 'shared 项在家庭空间 ∈ true');
+assert(inSpace({ dot: 'brand' }, 'family') === false, 'brand 项在家庭空间 ∈ false');
+assert(inSpace({ dot: 'brand' }, 'personal') === true, 'brand 项在个人空间 ∈ true');
 
 // ===== 汇总 =====
 if (failures > 0) {

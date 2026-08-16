@@ -14,6 +14,7 @@ page {
   --border-strong: #D6D2C8;
   --brand: #8B6F47;        /* 棕木 · 个人 */
   --brand-soft: #F0E9DE;
+  --brand-border: #E3D6C2; /* 品牌描边（邀请条等） */
   --family: #7A8471;       /* 苔绿 · 家庭 */
   --family-soft: #E7EBE3;
   --clay: #B89484;

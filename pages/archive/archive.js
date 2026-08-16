@@ -1,6 +1,7 @@
 const theme = require("../../utils/theme.js");
 const icons = require('../../utils/icons.js');
 const sync = require('../../utils/sync/index.js');
+const { filterBySpace } = require('../../utils/space.js');
 
 Page({
   data: {
@@ -20,7 +21,7 @@ Page({
     this.setData({ loading: true });
     sync.getArchive()
       .then((list) => {
-        const items = (list || []).map((a) => {
+        const all = (list || []).map((a) => {
           const p = (a && a.payload) || {};
           return {
             id: a.id,
@@ -29,6 +30,8 @@ Page({
             dot: a.shared ? 'family' : 'brand'
           };
         });
+        this._allItems = all;
+        const items = filterBySpace(all, getApp().globalData.space);
         this.setData({ items, loading: false });
       })
       .catch(() => { this.setData({ loading: false }); });
@@ -37,6 +40,8 @@ Page({
     const s = e.currentTarget.dataset.s;
     this.setData({ space: s });
     getApp().globalData.space = s;
+    const items = filterBySpace(this._allItems || [], s);
+    this.setData({ items });
   },
   go(e) {
     const p = e.currentTarget.dataset.p;

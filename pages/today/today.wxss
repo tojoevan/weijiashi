@@ -1,0 +1,37 @@
+/* ============================================================
+   微家事 · 首页 (pages/today) — 纯视觉换肤
+   仅在此页局部把品牌色覆盖为暖橙(#FF7A45) + 右上角品牌 logo，
+   结构/信息展示/功能逻辑与原版完全一致，不影响全站其它页面。
+   ============================================================ */
+.today-screen {
+  --brand: #FF7A45;          /* 暖橙 · 新品牌主色（覆盖后全局 --brand 元素自动变橙） */
+  --brand-soft: #FFEDE3;     /* 浅橙底 */
+  --family: #34C759;         /* 苔绿 · 家庭 / 绿勾 */
+  --family-soft: #E6F7EC;
+}
+
+/* 头部：问候文字（信息展示与原版相同，仅问候姓名着暖橙） */
+.home-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 40rpx;
+}
+.home-header .header-text {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  min-width: 0;
+}
+.home-header .h1 {
+  display: block;
+  font-size: 44rpx;
+  font-weight: 600;
+  color: var(--brand);   /* 问候姓名用品牌暖橙 */
+}
+.home-header .home-sub {
+  display: block;
+  margin-top: 12rpx;
+  font-size: 26rpx;
+  color: var(--text-tertiary);
+}
