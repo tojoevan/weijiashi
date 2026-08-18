@@ -124,6 +124,7 @@ Page({
       id: genId(),
       title,
       meta,
+      item: d.item || '',   // 关联物品（结构化存储，便于编辑页独立读写）
       tag: d.tag || '',
       dot: d.space === 'family' ? 'family' : 'brand',
       shared: d.space === 'family',

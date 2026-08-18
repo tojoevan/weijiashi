@@ -29,13 +29,50 @@ function metaDue(meta) {
   return { datePart: '', timePart: '' };
 }
 
+// yyyy-MM-dd + HH:mm 转「今天 20:00 / 明天 / 8月12日 周三」（与 new-task 同款，确保 meta.text 拼接一致）
+const WEEK = ['周日', '周一', '周二', '周三', '周四', '周五', '周六'];
+const pad = (n) => (n < 10 ? '0' + n : '' + n);
+function humanDate(dp, tp) {
+  if (!dp) return '';
+  const [y, m, day] = dp.split('-').map(Number);
+  const d = new Date(y, m - 1, day);
+  if (isNaN(d.getTime())) return dp;
+  const now = new Date();
+  const sameDay = (a, b) =>
+    a.getFullYear() === b.getFullYear() && a.getMonth() === b.getMonth() && a.getDate() === b.getDate();
+  let label = (m) + '月' + day + '日 ' + WEEK[d.getDay()];
+  const tomorrow = new Date(now);
+  tomorrow.setDate(now.getDate() + 1);
+  if (sameDay(d, now)) label = '今天';
+  else if (sameDay(d, tomorrow)) label = '明天';
+  if (tp) label += ' ' + tp;
+  return label;
+}
+
+// 旧数据未存结构化 item 时，从 meta.text（"个人 · 今天 20:00 · 客厅空调"）反解关联物品
+// 规则：段[0]=空间前缀；其后若有 ≥2 段，末段即关联物品；若仅 1 段需区分「只有日期」与「只有关联物品」
+function extractItemFromMeta(meta) {
+  const text = metaText(meta);
+  if (!text) return '';
+  const segs = text.split(' · ').map((s) => s.trim()).filter(Boolean);
+  if (segs.length <= 1) return '';
+  const rest = segs.slice(1); // 去掉空间前缀
+  if (rest.length >= 2) return rest[rest.length - 1]; // 末段即关联物品
+  const s = rest[0]; // 仅剩 1 段：能识别为日期则是「只有日期」，否则视为关联物品
+  const isDate = s.startsWith('今天') || s.startsWith('明天') || s.includes('月') ||
+    /\d{1,2}:\d{2}/.test(s) || s === '今天' || s === '明天';
+  return isDate ? '' : s;
+}
+
 Page({
   data: {
     themeStyle: theme.getThemeStyle(),
     icons,
     list: 'today',
+    kind: 'todo',   // 'todo'=待办；'task'=事务（按物品归并）
     id: '',
     form: { title: '', meta: '', tag: '' },
+    item: '',       // 关联物品（仅待办可编辑）
     datePart: '',
     timePart: '',
     shared: false,
@@ -57,10 +94,17 @@ Page({
       wx.showToast({ title: '未找到该项', icon: 'none' });
       return;
     }
+    const kind = list === 'tasks' ? 'task' : 'todo';
+    // 待办优先读结构化 item；旧数据无此字段时从 meta.text 反解
+    const itemVal = (item.item != null && item.item !== '')
+      ? item.item
+      : (kind === 'todo' ? extractItemFromMeta(item.meta) : '');
     this.setData({
       list,
+      kind,
       id,
       form: { title: item.title, meta: metaText(item.meta), tag: item.tag || '' },
+      item: itemVal,
       datePart: metaDue(item.meta).datePart,
       timePart: metaDue(item.meta).timePart,
       shared: item.shared === true || item.dot === 'family',
@@ -74,6 +118,7 @@ Page({
     this.setData({ shared: !this.data.shared });
   },
   onTitle(e) { this.setData({ 'form.title': e.detail.value }); },
+  onItem(e) { this.setData({ item: e.detail.value }); },
   onTag(e) { this.setData({ 'form.tag': e.detail.value }); },
   pickChip(e) { this.setData({ 'form.tag': e.currentTarget.dataset.t }); },
   clearChip() { this.setData({ 'form.tag': '' }); },
@@ -113,12 +158,25 @@ Page({
   },
   goBack() { wx.navigateBack(); },
   save() {
-    const { list, id, form, shared, photos } = this.data;
+    const { list, id, form, shared, photos, item } = this.data;
     const keys = photos.map((p) => p.key).filter(Boolean);
     let due;
     if (this.data.datePart) due = this.data.datePart + 'T' + (this.data.timePart || '23:59');
-    const meta = { text: form.meta, photos: keys, due };
+    // 待办：用结构化字段重新拼 meta.text（与 new-task 一致），确保关联物品可独立编辑且不丢展示
+    let metaTextVal;
+    if (list === 'today') {
+      const spaceLabel = shared ? '家庭' : '个人';
+      const parts = [spaceLabel];
+      const dt = humanDate(this.data.datePart, this.data.timePart);
+      if (dt) parts.push(dt);
+      if (item && item.trim()) parts.push(item.trim());
+      metaTextVal = parts.join(' · ');
+    } else {
+      metaTextVal = form.meta; // 事务：保持原「备注」行为
+    }
+    const meta = { text: metaTextVal, photos: keys, due };
     const patch = { id: id, title: form.title, meta, tag: form.tag, shared: shared, dot: shared ? 'family' : 'brand' };
+    if (list === 'today') patch.item = item;
     // 保存反馈与关闭不依赖网络：适配器已做本地乐观写入，云端同步放后台。
     // try/catch 兜底，确保 toast + 关闭一定执行（云端不可达时也不会卡住页面）。
     try {

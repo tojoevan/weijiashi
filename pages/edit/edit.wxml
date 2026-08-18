@@ -74,7 +74,11 @@
       </view>
     </picker>
 
-    <view class="input-card" style="margin-top:28rpx">
+    <view class="input-card" style="margin-top:28rpx" wx:if="{{kind==='todo'}}">
+      <text class="lbl">关联物品（可选）</text>
+      <input class="val-input" value="{{item}}" bindinput="onItem" placeholder="例如：客厅空调" placeholder-class="ph"/>
+    </view>
+    <view class="input-card" style="margin-top:28rpx" wx:if="{{kind==='task'}}">
       <text class="lbl">备注</text>
       <input class="val-input" value="{{form.meta}}" bindinput="onMeta" placeholder="时间 / 关联物品等" placeholder-class="ph"/>
     </view>
