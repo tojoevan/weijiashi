@@ -168,7 +168,7 @@ Page({
   },
   goBack() { wx.navigateBack(); },
   save() {
-    const { list, id, form, shared, photos, item } = this.data;
+    const { list, id, form, shared, coEdit, photos, item } = this.data;
     const keys = photos.map((p) => p.key).filter(Boolean);
     let due;
     if (this.data.datePart) due = this.data.datePart + 'T' + (this.data.timePart || '23:59');
