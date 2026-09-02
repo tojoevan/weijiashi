@@ -86,18 +86,35 @@ Page({
     const id = query.id;
     const key = MAP[list] || MAP.today;
     const raw = store.read(key);
-    let item;
-    if (list === 'tasks') {
-      item = (raw || []).find((t) => t.id === id);
-    } else {
-      item = (raw || []).find(t => t.id === id);
-    }
-    if (!item) {
-      wx.showToast({ title: '未找到该项', icon: 'none' });
-      return;
-    }
+    const item = (raw || []).find((t) => t.id === id);
+    if (item) { this._applyItem(list, id, item); return; }
+    // 本地未命中：可能是家庭成员分享的项（协同编辑场景），从家庭聚合流回退加载
+    if (!id) { wx.showToast({ title: '未找到该项', icon: 'none' }); return; }
+    family.ensureCurrentFamily().then((famId) => {
+      if (!famId) { wx.showToast({ title: '未找到该项', icon: 'none' }); return; }
+      return sync.getShared(famId).then((shared) => {
+        const it = (shared || []).find((x) => x.id === id);
+        if (!it) { wx.showToast({ title: '未找到该项', icon: 'none' }); return; }
+        const meta = (it.meta && typeof it.meta === 'object') ? it.meta : {};
+        const mapped = {
+          id: it.id,
+          title: it.title || '',
+          meta,
+          tag: it.tag || '',
+          dot: it.dot || 'family',
+          shared: true,
+          family_id: it.family_id || null,
+          co_edit: it.co_edit ? 1 : 0,
+          room: it.room || '',
+          owner_openid: it.owner_openid || ''
+        };
+        this._applyItem(list, id, mapped);
+      }).catch(() => { wx.showToast({ title: '未找到该项', icon: 'none' }); });
+    }).catch(() => { wx.showToast({ title: '未找到该项', icon: 'none' }); });
+  },
+  _applyItem(list, id, item) {
     const kind = list === 'tasks' ? 'task' : 'todo';
-    // 待办优先读结构化 item；旧数据无此字段时从 meta.text 反解
+    // 待办优先读结构化 item；旧数据无此字段时从 meta.text 反解；事务取 room（分组）
     const itemVal = (item.item != null && item.item !== '')
       ? item.item
       : (kind === 'todo' ? extractItemFromMeta(item.meta) : (item.room || ''));
