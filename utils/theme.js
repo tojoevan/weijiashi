@@ -3,7 +3,12 @@
 // 切换后整页氛围统一变化，提醒卡与提醒标签也随主题协调。
 
 const THEMES = [
-  { id: 'original', name: '原木棕',
+  { id: 'pine', name: '松绿',
+    brand: '#4F7A5C', brandSoft: '#E4EEE7', family: '#6E9C7A', familySoft: '#E8F1EB',
+    bg: '#F7FAF7', surfaceMuted: '#EDF3EE', borderSubtle: '#E2EAE3', borderStrong: '#CBD8CE',
+    gA: '#E4EDE7 0%, #D3E0D7 100%', gB: '#D3E0D7 0%, #B9CCBF 100%', gC: '#DEF0E3 0%, #C7DBCF 100%',
+    warn: '#4F7A5C', warnSoft: '#E4EEE7' },
+  { id: 'original', name: '木棕',
     brand: '#8B6F47', brandSoft: '#F0E9DE', family: '#7A8471', familySoft: '#E7EBE3',
     bg: '#FAFAF7', surfaceMuted: '#F2EFE8', borderSubtle: '#E8E4DD', borderStrong: '#D6D2C8',
     gA: '#EDE8DE 0%, #DBD4C7 100%', gB: '#DBD4C7 0%, #BFB5A3 100%', gC: '#E5E0D4 0%, #D1C9BA 100%',
@@ -18,11 +23,6 @@ const THEMES = [
     bg: '#FBF8F7', surfaceMuted: '#F6EFEE', borderSubtle: '#EFE6E4', borderStrong: '#E0D2CF',
     gA: '#F1E7E6 0%, #E4D3D1 100%', gB: '#E4D3D1 0%, #D2BBB8 100%', gC: '#EDE2E1 0%, #DAC9C7 100%',
     warn: '#A65C5C', warnSoft: '#F4E7E7' },
-  { id: 'pine', name: '松绿',
-    brand: '#4F7A5C', brandSoft: '#E4EEE7', family: '#6E9C7A', familySoft: '#E8F1EB',
-    bg: '#F7FAF7', surfaceMuted: '#EDF3EE', borderSubtle: '#E2EAE3', borderStrong: '#CBD8CE',
-    gA: '#E4EDE7 0%, #D3E0D7 100%', gB: '#D3E0D7 0%, #B9CCBF 100%', gC: '#DEF0E3 0%, #C7DBCF 100%',
-    warn: '#4F7A5C', warnSoft: '#E4EEE7' },
   { id: 'amber', name: '暖橙',
     brand: '#B5793F', brandSoft: '#F5EADF', family: '#C99A4E', familySoft: '#F6EEDF',
     bg: '#FBF9F5', surfaceMuted: '#F6EFE4', borderSubtle: '#EFE7D9', borderStrong: '#E0D2BD',
