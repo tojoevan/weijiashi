@@ -153,19 +153,38 @@ const cloudflareAdapter = {
     return authReq('DELETE', '/data/todos/' + id).then(() => {}).catch(() => {});
   },
 
-  // ---- 事务（整份 sections 文档） ----
-  getSections() {
-    const cached = store.read(K.sections) || [];
+  // ---- 事务（按项独立存储，2026-09-03 起替代整篇 sections 文档） ----
+  getTasks() {
+    const cached = store.read(K.tasks) || [];
     if (getToken()) {
       authReq('GET', '/data/tasks')
-        .then((s) => { const arr = (s && Array.isArray(s.sections)) ? s.sections : []; cacheWrite(K.sections, arr); })
+        .then((list) => { const arr = Array.isArray(list) ? list : []; cacheWrite(K.tasks, arr); })
         .catch(() => {});
     }
     return Promise.resolve(cached);
   },
-  saveSections(sections) {
-    cacheWrite(K.sections, sections); // 乐观本地
-    return authReq('PUT', '/data/tasks', { sections }).then(() => sections).catch(() => sections);
+  saveTask(task) {
+    const list = store.read(K.tasks) || [];
+    const exists = list.some((t) => t.id === task.id);
+    const next = exists ? store.updateById(list, task.id, task) : list.concat([task]);
+    cacheWrite(K.tasks, next); // 乐观本地
+    // 云端：本地已存在该 id → PUT 更新；否则 POST 创建。失败按 404/409/500 退化为另一方法。
+    const op = exists
+      ? authReq('PUT', '/data/tasks/' + task.id, task)
+          .catch((e) => ((e.message || '').indexOf('HTTP 404') === 0) ? request('POST', '/data/tasks', task) : Promise.reject(e))
+      : authReq('POST', '/data/tasks', task)
+          .catch((e) => {
+            const m = e.message || '';
+            if (m.indexOf('HTTP 404') === 0 || m.indexOf('HTTP 409') === 0 || m.indexOf('HTTP 500') === 0) {
+              return request('PUT', '/data/tasks/' + task.id, task);
+            }
+            return Promise.reject(e);
+          });
+    return op.then(() => task).catch(() => task); // 离线保留本地
+  },
+  deleteTask(id) {
+    cacheWrite(K.tasks, store.removeById(store.read(K.tasks) || [], id));
+    return authReq('DELETE', '/data/tasks/' + id).then(() => {}).catch(() => {});
   },
 
   // ---- 档案 ----
@@ -222,7 +241,18 @@ const cloudflareAdapter = {
           payload: p
         };
       });
-      return todos.concat(archive);
+      const tasks = (r.tasks || []).map((t) => ({
+        id: t.id,
+        type: 'task',
+        title: t.title || '',
+        tag: t.tag || '',
+        dot: t.dot || 'family',
+        owner_openid: t.owner_openid || '',
+        co_edit: t.co_edit ? 1 : 0,
+        room: t.room || '',
+        meta: norm(t.meta)
+      }));
+      return todos.concat(tasks).concat(archive);
     }).catch(() => {
       // 离线回退：仅本机 shared=true 的项，结构同上
       const norm = (meta) => (meta && typeof meta === 'object') ? meta : (typeof meta === 'string' ? { text: meta } : {});
@@ -230,13 +260,9 @@ const cloudflareAdapter = {
         id: t.id, type: 'todo', title: t.title || '', tag: t.tag || '',
         dot: t.dot || 'family', owner_openid: '', co_edit: 0, meta: norm(t.meta)
       }));
-      const sections = store.read(K.sections) || [];
-      const tasks = [];
-      sections.forEach((sec) => (sec.items || []).forEach((it) => {
-        if (it.shared) tasks.push({
-          id: it.id, type: 'task', title: it.title || '', tag: it.tag || '',
-          dot: it.dot || 'family', owner_openid: '', meta: norm(it.meta)
-        });
+      const tasks = (store.read(K.tasks) || []).filter((t) => t.shared).map((t) => ({
+        id: t.id, type: 'task', title: t.title || '', tag: t.tag || '',
+        dot: t.dot || 'family', owner_openid: '', co_edit: 0, room: t.room || '', meta: norm(t.meta)
       }));
       return todos.concat(tasks);
     });

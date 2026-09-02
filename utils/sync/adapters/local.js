@@ -26,13 +26,18 @@ const localAdapter = {
     return Promise.resolve();
   },
 
-  // ---- 事务（整份 sections 文档） ----
-  getSections() {
-    return Promise.resolve(store.read(K.sections) || []);
+  // ---- 事务（按项独立存储，2026-09-03 起替代整篇 sections 文档） ----
+  getTasks() {
+    return Promise.resolve(store.read(K.tasks) || []);
   },
-  saveSections(sections) {
-    store.write(K.sections, sections);
-    return Promise.resolve(sections);
+  saveTask(task) {
+    const next = upsert(store.read(K.tasks) || [], task);
+    store.write(K.tasks, next);
+    return Promise.resolve(task);
+  },
+  deleteTask(id) {
+    store.write(K.tasks, store.removeById(store.read(K.tasks) || [], id));
+    return Promise.resolve();
   },
 
   // ---- 档案 ----
@@ -56,13 +61,9 @@ const localAdapter = {
       id: t.id, type: 'todo', title: t.title || '', tag: t.tag || '',
       dot: t.dot || 'family', owner_openid: '', co_edit: 0, meta: norm(t.meta)
     }));
-    const sections = store.read(K.sections) || [];
-    const tasks = [];
-    sections.forEach(sec => (sec.items || []).forEach(it => {
-      if (it.shared) tasks.push({
-        id: it.id, type: 'task', title: it.title || '', tag: it.tag || '',
-        dot: it.dot || 'family', owner_openid: '', meta: norm(it.meta)
-      });
+    const tasks = (store.read(K.tasks) || []).filter(t => t.shared).map(t => ({
+      id: t.id, type: 'task', title: t.title || '', tag: t.tag || '',
+      dot: t.dot || 'family', owner_openid: '', co_edit: 0, room: t.room || '', meta: norm(t.meta)
     }));
     return Promise.resolve(todos.concat(tasks));
   },

@@ -37,8 +37,8 @@ Page({
   runSearch(kw) {
     if (!kw) { this.setData({ total: 0, groups: [] }); return; }
     const q = lower(kw);
-    Promise.all([sync.getTodos(), sync.getSections(), sync.getArchive()])
-      .then(([todos, sections, archive]) => {
+    Promise.all([sync.getTodos(), sync.getTasks(), sync.getArchive()])
+      .then(([todos, tasks, archive]) => {
         const group = family.getRawGroup() || { members: [] };
         const members = group.members || [];
 
@@ -50,18 +50,15 @@ Page({
             dot: t.dot || 'brand', navUrl: '/pages/edit/edit?list=today&id=' + t.id
           }));
 
-        // 事务（sections -> items）
-        const tasksR = [];
-        (sections || []).forEach(sec => (sec.items || []).forEach(it => {
-          if (hit([sec.title, it.title, it.tag, it.meta], q)) {
-            tasksR.push({
-              id: it.id, title: it.title,
-              subtitle: sec.title + (it.meta ? ' · ' + it.meta : ''),
-              tag: it.tag || '', dot: it.dot || 'brand',
-              navUrl: '/pages/edit/edit?list=tasks&id=' + it.id
-            });
-          }
-        }));
+        // 事务（按项存储，2026-09-03 起）
+        const tasksR = (tasks || [])
+          .filter(t => hit([t.room, t.title, t.tag, (t.meta && typeof t.meta === 'object') ? t.meta.text : t.meta], q))
+          .map(t => ({
+            id: t.id, title: t.title,
+            subtitle: (t.room || '') + ((t.meta && typeof t.meta === 'object' && t.meta.text) ? (' · ' + t.meta.text) : ''),
+            tag: t.tag || '', dot: t.dot || 'brand',
+            navUrl: '/pages/edit/edit?list=tasks&id=' + t.id
+          }));
 
         // 档案
         const archiveR = (archive || [])

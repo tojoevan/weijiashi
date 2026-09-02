@@ -2,6 +2,7 @@ const theme = require("../../utils/theme.js");
 const icons = require('../../utils/icons.js');
 const store = require('../../utils/store.js');
 const sync = require('../../utils/sync/index.js');
+const family = require('../../utils/family.js');
 
 // 生成足够唯一的本地 id（不依赖 crypto）
 function genId() {
@@ -120,6 +121,10 @@ Page({
     if (d.datePart) due = d.datePart + 'T' + (d.timePart || '23:59');
     const meta = { text: parts.join(' · '), photos: d.photos, due };
 
+    // 真实当前家庭 id：共享项必须写入它，家庭聚合流才能按家庭过滤命中。
+    // 修复旧版写死 'default' 导致家庭流匹配不到的坑（事务、待办都受影响）。
+    const famId = d.space === 'family' ? (family.getCurrentFamily && family.getCurrentFamily()) || null : null;
+
     const item = {
       id: genId(),
       title,
@@ -128,18 +133,24 @@ Page({
       tag: d.tag || '',
       dot: d.space === 'family' ? 'family' : 'brand',
       shared: d.space === 'family',
-      family_id: d.space === 'family' ? 'default' : null
+      family_id: famId
     };
 
-    // 事务：并入同名分组，没有则新建分组，写入 js_sections_tasks
+    // 事务：按项独立存储（2026-09-03 起），room=分组/物品名。
     if (d.kind === 'task') {
-      const key = sync.config.STORAGE_KEYS.sections;
-      const sections = (store.read(key) || []).map(s => Object.assign({}, s, { items: (s.items || []).slice() }));
-      const sec = sections.find(s => s.title === group);
-      if (sec) sec.items = sec.items.concat([item]);
-      else sections.push({ title: group, items: [item] });
+      const task = {
+        id: genId(),
+        title,
+        meta,
+        tag: d.tag || '',
+        dot: d.space === 'family' ? 'family' : 'brand',
+        shared: d.space === 'family',
+        family_id: famId,
+        co_edit: 0,
+        room: group
+      };
       wx.showLoading({ title: '创建中' });
-      sync.saveSections(sections)
+      Promise.resolve(sync.saveTask(task))
         .then(() => {
           wx.hideLoading();
           wx.showToast({ title: '已创建', icon: 'success' });

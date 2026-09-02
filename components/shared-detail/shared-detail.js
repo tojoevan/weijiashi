@@ -31,7 +31,7 @@ Component({
       const photos = ((content.photos && Array.isArray(content.photos)) ? content.photos : [])
         .map((k) => sync.getImageUrl(k)).filter(Boolean);
       const initial = (item.sharer && item.sharer !== '家庭成员') ? item.sharer.charAt(0) : '友';
-      const typeLabel = item.type === 'archive' ? '物品档案' : '待办';
+      const typeLabel = item.type === 'archive' ? '物品档案' : (item.type === 'task' ? '事务' : '待办');
       this.setData({ isOwner, canEdit, readOnly, done, initial, text: content.text || '', photos, typeLabel });
     }
   },
@@ -40,7 +40,7 @@ Component({
     close() { this.triggerEvent('close'); },
     onToggleDone() {
       const item = this.data.item;
-      if (item.type !== 'todo') return;
+      if (item.type !== 'todo' && item.type !== 'task') return;
       family.setItemDone(item.id, !this.data.done).then(() => {
         this.setData({ done: !this.data.done });
         this.triggerEvent('updated', { id: item.id });

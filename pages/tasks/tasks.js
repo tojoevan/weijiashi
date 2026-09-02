@@ -5,30 +5,31 @@ const sync = require('../../utils/sync/index.js');
 const family = require('../../utils/family.js');
 const sharedFeed = require('../../utils/sharedFeed.js');
 
-const SECTION_KEY = 'js_sections_tasks';
-const SEED_SECTIONS = [
-  {
-    title: '客厅空调', count: '3 项', items: [
-      { id: 'k1', title: '空调滤网清洗', meta: '个人 · 今天 20:00', tag: '重复', dot: 'brand' },
-      { id: 'k2', title: '预约空调加氟', meta: '家庭 · 周日 10:00', tag: '家庭', dot: 'family' }
-    ]
-  },
-  {
-    title: '洗衣机', count: '2 项', items: [
-      { id: 'k3', title: '洗衣机深度清洗', meta: '家庭 · 8/20 到期前', tag: '保养', dot: 'family' },
-      { id: 'k4', title: '续保洗衣机延保', meta: '个人 · 8/20', tag: '提醒', dot: 'brand' }
-    ]
-  }
+const SEED_TASKS = [
+  { id: 'k1', title: '空调滤网清洗', meta: { text: '个人 · 今天 20:00', photos: [] }, tag: '重复', dot: 'brand', shared: false, family_id: null, room: '客厅空调' },
+  { id: 'k2', title: '预约空调加氟', meta: { text: '家庭 · 周日 10:00', photos: [] }, tag: '家庭', dot: 'family', shared: true, family_id: 'default', room: '客厅空调' },
+  { id: 'k3', title: '洗衣机深度清洗', meta: { text: '家庭 · 8/20 到期前', photos: [] }, tag: '保养', dot: 'family', shared: true, family_id: 'default', room: '洗衣机' },
+  { id: 'k4', title: '续保洗衣机延保', meta: { text: '个人 · 8/20', photos: [] }, tag: '提醒', dot: 'brand', shared: false, family_id: null, room: '洗衣机' }
 ];
 
-// 把存储里的 sections 归一化：meta 可能是字符串或 {text,...} 对象，统一抽出可展示的 _text
-function normalize(raw) {
-  return (raw || []).map(sec => ({
-    title: sec.title,
-    items: (sec.items || []).map(it => Object.assign({}, it, {
-      _text: (it.meta && typeof it.meta === 'object') ? (it.meta.text || '') : (it.meta || '')
-    }))
-  }));
+// 把存储里的任务（按项）归一化：meta 可能是字符串或 {text,...} 对象，统一抽出可展示的 _text / done
+function normalizeTask(t) {
+  const meta = (t && t.meta && typeof t.meta === 'object') ? t.meta : {};
+  return Object.assign({}, t, {
+    _text: meta.text || '',
+    done: !!meta.done
+  });
+}
+
+// 按 room（分组 / 物品名）归并，保持「按物品归并」的展示形态
+function groupByRoom(tasks) {
+  const map = {};
+  (tasks || []).forEach((t) => {
+    const room = t.room || '未分组';
+    if (!map[room]) map[room] = [];
+    map[room].push(normalizeTask(t));
+  });
+  return Object.keys(map).map((room) => ({ title: room, items: map[room] }));
 }
 
 Page({
@@ -37,7 +38,7 @@ Page({
     icons,
     selected: 1,
     space: 'personal',
-    sections: [],   // 全量（已归一化）
+    sections: [],   // 全量（已按 room 归并、已归一化）
     view: [],       // 按 space 过滤后的展示列表
     total: 0,
     empty: false,
@@ -48,7 +49,7 @@ Page({
   },
   onLoad() {
     // 仅在本地模式首启时播种演示数据；已有数据（含手动清空后的 []）不再覆盖
-    if (sync.mode === 'local') store.ensure(SECTION_KEY, SEED_SECTIONS);
+    if (sync.mode === 'local') store.ensure('js_tasks', SEED_TASKS);
   },
   onShow() {
     this.setData({ themeStyle: theme.getThemeStyle() });
@@ -57,11 +58,11 @@ Page({
     if (space === 'family') this.loadFamily();
     else this.loadPersonal();
   },
-  // 个人空间：按房间归并的事务（本地 sections 文档）
+  // 个人空间：按 room 归并的事务（本地 tasks 存储，按项）
   loadPersonal() {
-    sync.getSections().then(raw => {
-      const sections = normalize(raw);
-      const total = sections.reduce((n, s) => n + s.items.length, 0);
+    sync.getTasks().then((raw) => {
+      const sections = groupByRoom(raw);
+      const total = (raw || []).length;
       this.setData({ sections, total });
       this.applySpace();
     });
@@ -78,15 +79,16 @@ Page({
       });
     }).catch(() => {});
   },
-  // 按当前 space 过滤：家庭空间只看 dot==='family'，个人空间看其余
+  // 按当前 space 过滤：家庭空间只看 family 项，个人空间看其余
   applySpace() {
     const space = this.data.space;
+    const isFamily = (it) => !!(it && (it.shared === true || it.dot === 'family'));
     const view = this.data.sections
-      .map(sec => ({
+      .map((sec) => ({
         title: sec.title,
-        items: sec.items.filter(it => space === 'family' ? it.dot === 'family' : it.dot !== 'family')
+        items: sec.items.filter((it) => space === 'family' ? isFamily(it) : !isFamily(it))
       }))
-      .filter(sec => sec.items.length > 0);
+      .filter((sec) => sec.items.length > 0);
     this.setData({ view, empty: view.length === 0 });
   },
   setSpace(e) {
@@ -103,13 +105,25 @@ Page({
     if (it) this.setData({ sharedDetail: it });
   },
   closeShared() { this.setData({ sharedDetail: null }); },
-  onSharedUpdated() { this.loadFamily(); },
+  onSharedUpdated() {
+    const currentId = this.data.sharedDetail ? this.data.sharedDetail.id : null;
+    sharedFeed.loadFamilyFeed().then(({ familyId, items, selfOpenid }) => {
+      const detail = currentId ? (items.find((x) => x.id === currentId) || null) : null;
+      this.setData({
+        familyId,
+        sharedItems: items,
+        selfOpenid,
+        familyEmpty: items.length === 0,
+        sharedDetail: detail
+      });
+    }).catch(() => {});
+  },
   onSharedEdit(e) {
     const { id, type } = e.detail;
     this.setData({ sharedDetail: null });
     const url = type === 'archive'
       ? '/pages/archive-detail/archive-detail?id=' + id
-      : '/pages/edit/edit?list=tasks&id=' + id;
+      : (type === 'task' ? '/pages/edit/edit?list=tasks&id=' + id : '/pages/edit/edit?list=today&id=' + id);
     wx.navigateTo({ url });
   },
   go(e) {

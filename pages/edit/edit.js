@@ -7,7 +7,7 @@ const family = require('../../utils/family.js');
 // 不同来源对应不同的存储 key 与数据结构
 const MAP = {
   today: 'js_todos_today',
-  tasks: 'js_sections_tasks'
+  tasks: 'js_tasks'
 };
 
 const TAG_CHIPS = ['账单', '家庭', '重复', '保养', '提醒'];
@@ -88,7 +88,7 @@ Page({
     const raw = store.read(key);
     let item;
     if (list === 'tasks') {
-      (raw || []).forEach(sec => (sec.items || []).forEach(it => { if (it.id === id) item = it; }));
+      item = (raw || []).find((t) => t.id === id);
     } else {
       item = (raw || []).find(t => t.id === id);
     }
@@ -100,7 +100,7 @@ Page({
     // 待办优先读结构化 item；旧数据无此字段时从 meta.text 反解
     const itemVal = (item.item != null && item.item !== '')
       ? item.item
-      : (kind === 'todo' ? extractItemFromMeta(item.meta) : '');
+      : (kind === 'todo' ? extractItemFromMeta(item.meta) : (item.room || ''));
     this.setData({
       list,
       kind,
@@ -189,12 +189,12 @@ Page({
     const famId = shared ? (family.getCurrentFamily && family.getCurrentFamily()) || null : null;
     const patch = { id: id, title: form.title, meta, tag: form.tag, shared: shared, dot: shared ? 'family' : 'brand', family_id: famId, co_edit: shared ? (coEdit ? 1 : 0) : 0 };
     if (list === 'today') patch.item = item;
+    if (list === 'tasks') patch.room = item; // 事务的「关联物品」即分组/room
     // 保存反馈与关闭不依赖网络：适配器已做本地乐观写入，云端同步放后台。
     // try/catch 兜底，确保 toast + 关闭一定执行（云端不可达时也不会卡住页面）。
     try {
       if (list === 'tasks') {
-        const sections = (store.read(MAP.tasks) || []).map(sec => Object.assign({}, sec, { items: store.updateById(sec.items || [], id, patch) }));
-        const w = sync.saveSections(sections);
+        const w = sync.saveTask(patch);
         if (w && typeof w.catch === 'function') w.catch(() => {});
       } else {
         const w = sync.saveTodo(patch);
@@ -207,16 +207,8 @@ Page({
   remove() {
     const { list, id } = this.data;
     try {
-      if (list === 'tasks') {
-        const sections = (store.read(MAP.tasks) || [])
-          .map(sec => Object.assign({}, sec, { items: store.removeById(sec.items || [], id) }))
-          .filter(sec => (sec.items || []).length > 0);
-        const w = sync.saveSections(sections);
-        if (w && typeof w.catch === 'function') w.catch(() => {});
-      } else {
-        const w = sync.deleteTodo(id);
-        if (w && typeof w.catch === 'function') w.catch(() => {});
-      }
+      const w = (list === 'tasks') ? sync.deleteTask(id) : sync.deleteTodo(id);
+      if (w && typeof w.catch === 'function') w.catch(() => {});
     } catch (e) { /* 本地删除已在适配器内完成 */ }
     wx.showToast({ title: '已删除', icon: 'none' });
     setTimeout(() => this.closeEdit(), 400);

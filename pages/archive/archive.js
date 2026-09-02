@@ -72,13 +72,25 @@ Page({
     if (it) this.setData({ sharedDetail: it });
   },
   closeShared() { this.setData({ sharedDetail: null }); },
-  onSharedUpdated() { this.loadFamily(); },
+  onSharedUpdated() {
+    const currentId = this.data.sharedDetail ? this.data.sharedDetail.id : null;
+    sharedFeed.loadFamilyFeed().then(({ familyId, items, selfOpenid }) => {
+      const detail = currentId ? (items.find((x) => x.id === currentId) || null) : null;
+      this.setData({
+        familyId,
+        sharedItems: items,
+        selfOpenid,
+        familyEmpty: items.length === 0,
+        sharedDetail: detail
+      });
+    }).catch(() => {});
+  },
   onSharedEdit(e) {
     const { id, type } = e.detail;
     this.setData({ sharedDetail: null });
     const url = type === 'archive'
       ? '/pages/archive-detail/archive-detail?id=' + id
-      : '/pages/edit/edit?list=today&id=' + id;
+      : (type === 'task' ? '/pages/edit/edit?list=tasks&id=' + id : '/pages/edit/edit?list=today&id=' + id);
     wx.navigateTo({ url });
   },
   go(e) {

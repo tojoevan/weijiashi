@@ -49,7 +49,7 @@ Page({
     const data = {
       todos: store.read(config.STORAGE_KEYS.todos) || [],
       archive: store.read(config.STORAGE_KEYS.archive) || [],
-      sections: store.read(config.STORAGE_KEYS.sections) || [],
+      tasks: store.read(config.STORAGE_KEYS.tasks) || [],
       exportedAt: new Date().toISOString()
     };
     const str = JSON.stringify(data, null, 2);

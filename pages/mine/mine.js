@@ -36,13 +36,11 @@ Page({
   // 统计来自真实数据：待办数 / 档案条目数 / 事务记录条数
   loadStats() {
     const space = getApp().globalData.space;
-    Promise.all([sync.getTodos(), sync.getArchive(), sync.getSections()])
-      .then(([todos, archive, sections]) => {
+    Promise.all([sync.getTodos(), sync.getArchive(), sync.getTasks()])
+      .then(([todos, archive, tasks]) => {
         const todo = (todos || []).filter(t => inSpace(t, space)).length;
         const archiveN = (archive || []).filter(a => inSpace(a, space)).length;
-        const record = (sections || []).reduce(
-          (sum, sec) => sum + ((sec && sec.items) ? sec.items.filter(it => inSpace(it, space)).length : 0), 0
-        );
+        const record = (tasks || []).filter(t => inSpace(t, space)).length;
         this.setData({ stats: { todo, archive: archiveN, record } });
       })
       .catch(() => {});
