@@ -11,6 +11,7 @@ Page({
     icons,
     selected: 2,
     space: 'personal',
+    familySpaceLabel: '家庭空间',
     loading: true,
     items: [],
     sharedItems: [],
@@ -22,6 +23,7 @@ Page({
     this.setData({ themeStyle: theme.getThemeStyle() });
     const space = getApp().globalData.space;
     this.setData({ space });
+    this.setData({ familySpaceLabel: family.familySpaceLabel(space) });
     if (space === 'family') this.loadFamily();
     else this.loadPersonal();
   },
@@ -54,13 +56,15 @@ Page({
         selfOpenid,
         familyEmpty: items.length === 0,
         sharedDetail: null,
-        loading: false
+        loading: false,
+        familySpaceLabel: family.familySpaceLabel(this.data.space)
       });
     }).catch(() => { this.setData({ loading: false }); });
   },
   setSpace(e) {
     const s = e.currentTarget.dataset.s;
     this.setData({ space: s });
+    this.setData({ familySpaceLabel: family.familySpaceLabel(s) });
     getApp().globalData.space = s;
     if (s === 'family') this.loadFamily();
     else this.loadPersonal();
@@ -81,7 +85,8 @@ Page({
         sharedItems: items,
         selfOpenid,
         familyEmpty: items.length === 0,
-        sharedDetail: detail
+        sharedDetail: detail,
+        familySpaceLabel: family.familySpaceLabel(this.data.space)
       });
     }).catch(() => {});
   },

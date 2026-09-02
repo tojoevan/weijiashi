@@ -38,6 +38,7 @@ Page({
     icons,
     selected: 1,
     space: 'personal',
+    familySpaceLabel: '家庭空间',
     sections: [],   // 全量（已按 room 归并、已归一化）
     view: [],       // 按 space 过滤后的展示列表
     total: 0,
@@ -55,6 +56,7 @@ Page({
     this.setData({ themeStyle: theme.getThemeStyle() });
     const space = getApp().globalData.space;
     this.setData({ space });
+    this.setData({ familySpaceLabel: family.familySpaceLabel(space) });
     if (space === 'family') this.loadFamily();
     else this.loadPersonal();
   },
@@ -75,7 +77,8 @@ Page({
         sharedItems: items,
         selfOpenid,
         familyEmpty: items.length === 0,
-        sharedDetail: null
+        sharedDetail: null,
+        familySpaceLabel: family.familySpaceLabel(this.data.space)
       });
     }).catch(() => {});
   },
@@ -94,6 +97,7 @@ Page({
   setSpace(e) {
     const s = e.currentTarget.dataset.s;
     this.setData({ space: s });
+    this.setData({ familySpaceLabel: family.familySpaceLabel(s) });
     getApp().globalData.space = s;
     if (s === 'family') this.loadFamily();
     else this.loadPersonal();
@@ -114,7 +118,8 @@ Page({
         sharedItems: items,
         selfOpenid,
         familyEmpty: items.length === 0,
-        sharedDetail: detail
+        sharedDetail: detail,
+        familySpaceLabel: family.familySpaceLabel(this.data.space)
       });
     }).catch(() => {});
   },

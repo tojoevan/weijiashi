@@ -6,6 +6,7 @@ const cloud = sync._adapter;
 const profile = require('./profile.js');
 
 const CURRENT_KEY = 'js_current_family';
+const FAM_LIST_KEY = 'js_family_list';   // 家庭列表本地缓存（同步读名字，免每次开页打云端）
 const _inviteCache = {};       // family_id -> code，避免反复生成邀请
 let _memberCache = [];         // 最近一次加载的当前家庭成员（供 search.js 同步读取）
 
@@ -19,9 +20,31 @@ function setCurrentFamily(id) {
   } catch (e) {}
 }
 
+// 返回 {id, name}；名字来自本地缓存的列表（listFamilies 时落盘），同步、免网络。
+// 无当前家庭或缓存缺失 → {id:null, name:''}。
+function getCurrentFamilyInfo() {
+  const id = getCurrentFamily();
+  if (!id) return { id: null, name: '' };
+  let list = [];
+  try { list = wx.getStorageSync(FAM_LIST_KEY) || []; } catch (e) { list = []; }
+  const f = (Array.isArray(list) ? list : []).find((x) => x.family_id === id);
+  return { id, name: f ? f.name : '' };
+}
+
+// 家庭空间分段标签：space 非 family 直接返回「家庭空间」；
+// 否则拼上当前家庭名（超 max 字截断加省略号）。仅展示、不切换。
+function familySpaceLabel(space, max) {
+  if (space !== 'family') return '家庭空间';
+  const info = getCurrentFamilyInfo();
+  const name = info.name || '';
+  const cut = max && name.length > max ? name.slice(0, max) + '…' : name;
+  return cut ? '家庭空间 · ' + cut : '家庭空间';
+}
+
 async function listFamilies() {
   const r = await cloud.familyMine();
   const list = Array.isArray(r) ? r : [];
+  try { wx.setStorageSync(FAM_LIST_KEY, list); } catch (e) {}
   const cur = getCurrentFamily();
   if (!list.some((f) => f.family_id === cur) && list.length) setCurrentFamily(list[0].family_id);
   return list;
@@ -108,6 +131,8 @@ function getRawGroup() {
 
 module.exports = {
   getCurrentFamily,
+  getCurrentFamilyInfo,
+  familySpaceLabel,
   setCurrentFamily,
   listFamilies,
   ensureCurrentFamily,
