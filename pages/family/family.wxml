@@ -53,7 +53,7 @@
 
       <view class="member-row form" wx:for="{{members}}" wx:key="openid">
         <view class="avatar {{item.is_self ? 'self' : 'family'}}">{{item.initial}}</view>
-        <text class="m-name">{{item.nickname}}{{item.is_self ? '（我）' : ''}}</text>
+        <text class="m-name">{{item.is_self ? (item.nickname ? item.nickname + '（我）' : '我') : (item.nickname || '微信好友')}}</text>
         <view class="pill {{item.role === 'owner' ? 'brand' : 'muted'}}">{{item.roleLabel}}</view>
       </view>
 

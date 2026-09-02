@@ -3,6 +3,7 @@
 // 依赖 sync._adapter（CLOUD_ENABLED=true 时为 cloudflare 适配器，含 family* 方法）。
 const sync = require('./sync/index.js');
 const cloud = sync._adapter;
+const profile = require('./profile.js');
 
 const CURRENT_KEY = 'js_current_family';
 const _inviteCache = {};       // family_id -> code，避免反复生成邀请
@@ -27,7 +28,8 @@ async function listFamilies() {
 }
 
 async function createFamily(name) {
-  const r = await cloud.familyCreate(name);
+  const nick = profile.isSet() ? profile.displayName() : '';
+  const r = await cloud.familyCreate(name, nick);
   if (r && r.family_id) setCurrentFamily(r.family_id);
   return r;
 }
@@ -68,6 +70,11 @@ async function transferFamily(familyId, toOpenid) {
   return cloud.familyTransfer(familyId, toOpenid);
 }
 
+// 当前成员更新自己在某家庭内的昵称（存量 owner 漏存昵称的回写入口）。
+async function setMyNickname(familyId, nickname) {
+  return cloud.familySetNickname(familyId, nickname);
+}
+
 // 兼容 pages/search/search.js：返回最近一次加载的成员快照（同步读取）。
 function getRawGroup() {
   return {
@@ -91,5 +98,6 @@ module.exports = {
   getMembers,
   leaveFamily,
   transferFamily,
+  setMyNickname,
   getRawGroup
 };

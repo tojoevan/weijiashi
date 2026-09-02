@@ -53,7 +53,7 @@ Page({
         currentFamily: fam ? fam.family_id : '',
         currentName: fam ? fam.name : '',
         members: members.map((m) => Object.assign({}, m, {
-          initial: (m.nickname || '成').charAt(0),
+          initial: m.is_self ? (m.nickname || '我').charAt(0) : (m.nickname || '友').charAt(0),
           roleLabel: m.role === 'owner' ? '管理员' : '成员'
         })),
         selfRole: fam ? fam.role : 'member',
@@ -70,6 +70,19 @@ Page({
         return Object.assign({}, it, { sharer });
       });
       this.setData({ sharedItems });
+
+      // 存量修复：当前成员昵称缺失且已设置本地昵称时，自动回写真名（fire-and-forget）。
+      const me = members.find((m) => m.is_self);
+      if (me && !me.nickname && profile.isSet()) {
+        const nick = profile.displayName();
+        family.setMyNickname(fam.family_id, nick).then(() => {
+          const ms = (this.data.members || []).map((x) => x.is_self ? Object.assign({}, x, {
+            nickname: nick,
+            initial: (nick || '我').charAt(0)
+          }) : x);
+          this.setData({ members: ms });
+        }).catch(() => {});
+      }
     } catch (e) {}
   },
   // 切换当前家庭

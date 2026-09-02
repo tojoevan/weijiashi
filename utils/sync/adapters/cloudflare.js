@@ -269,8 +269,8 @@ const cloudflareAdapter = {
 
   // ---- 家庭（多家庭模型，每人最多 3 个）----
   // 全部走网关 /api/family/*（authReq 已带会话令牌，网关注入 openid）。
-  familyCreate(name) {
-    return authReq('POST', '/family', { name: name || '我的家庭' });
+  familyCreate(name, nickname) {
+    return authReq('POST', '/family', { name: name || '我的家庭', nickname: nickname || '' });
   },
   familyMine() {
     return authReq('GET', '/family/mine');
@@ -292,6 +292,9 @@ const cloudflareAdapter = {
   },
   familyTransfer(familyId, toOpenid) {
     return authReq('POST', '/family/transfer', { family_id: familyId, to_openid: toOpenid });
+  },
+  familySetNickname(familyId, nickname) {
+    return authReq('POST', '/family/nickname', { family_id: familyId, nickname: nickname || '' });
   }
 };
 
