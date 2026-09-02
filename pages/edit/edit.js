@@ -77,6 +77,7 @@ Page({
     datePart: '',
     timePart: '',
     shared: false,
+    coEdit: false,  // 共享时是否允许成员协作编辑（仅所有者可切，默认关）
     photos: [],
     tagChips: TAG_CHIPS
   },
@@ -109,6 +110,7 @@ Page({
       datePart: metaDue(item.meta).datePart,
       timePart: metaDue(item.meta).timePart,
       shared: item.shared === true || item.dot === 'family',
+      coEdit: !!(item.co_edit) && (item.shared === true || item.dot === 'family'),
       photos: metaPhotos(item.meta).map((k) => ({ url: sync.getImageUrl(k), key: k }))
     });
     // 预热当前家庭，确保分享时能拿到 family_id（避免写出 null/'default' 孤儿）
@@ -119,6 +121,11 @@ Page({
   },
   toggleShare() {
     this.setData({ shared: !this.data.shared });
+  },
+  toggleCoEdit() {
+    // 仅对共享项有意义：开启后家庭成员可改内容（受后端 co_edit 门控）。
+    // 非所有者即使切到开，保存时后端也会忽略并保留原值。
+    this.setData({ coEdit: !this.data.coEdit });
   },
   onTitle(e) { this.setData({ 'form.title': e.detail.value }); },
   onItem(e) { this.setData({ item: e.detail.value }); },
@@ -180,7 +187,7 @@ Page({
     const meta = { text: metaTextVal, photos: keys, due };
     // 共享时把当前家庭 id 写入，家庭共享列表才能按家庭过滤、并显示其他成员分享
     const famId = shared ? (family.getCurrentFamily && family.getCurrentFamily()) || null : null;
-    const patch = { id: id, title: form.title, meta, tag: form.tag, shared: shared, dot: shared ? 'family' : 'brand', family_id: famId };
+    const patch = { id: id, title: form.title, meta, tag: form.tag, shared: shared, dot: shared ? 'family' : 'brand', family_id: famId, co_edit: shared ? (coEdit ? 1 : 0) : 0 };
     if (list === 'today') patch.item = item;
     // 保存反馈与关闭不依赖网络：适配器已做本地乐观写入，云端同步放后台。
     // try/catch 兜底，确保 toast + 关闭一定执行（云端不可达时也不会卡住页面）。

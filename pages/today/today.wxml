@@ -25,53 +25,93 @@
       <view class="space-seg {{space==='family'?'active':''}}" bindtap="setSpace" data-s="family"><view class="dot family"></view><text>家庭空间</text></view>
     </view>
 
-    <!-- 即将到期提醒 -->
-    <block wx:for="{{visibleReminders}}" wx:key="id">
-      <view class="reminder" style="margin-top:30rpx">
-        <view class="r-top">
-          <image class="bell" src="{{icons.bell}}" />
-          <view class="r-body">
-            <text class="r-title">{{item.title}}</text>
-            <text class="r-desc">{{item.desc}}</text>
+    <!-- 个人空间：自己的待办 + 到期提醒 -->
+    <block wx:if="{{space === 'personal'}}">
+      <!-- 即将到期提醒 -->
+      <block wx:for="{{visibleReminders}}" wx:key="id">
+        <view class="reminder" style="margin-top:30rpx">
+          <view class="r-top">
+            <image class="bell" src="{{icons.bell}}" />
+            <view class="r-body">
+              <text class="r-title">{{item.title}}</text>
+              <text class="r-desc">{{item.desc}}</text>
+            </view>
+          </view>
+          <view class="r-ops">
+            <text class="r-op" bindtap="ignoreReminder" data-id="{{item.id}}">忽略</text>
+            <text class="r-op" bindtap="snoozeReminder" data-id="{{item.id}}">延时提醒</text>
+            <text class="r-op exec" bindtap="executeReminder" data-target="{{item.actionTarget}}">{{item.actionLabel}}</text>
           </view>
         </view>
-        <view class="r-ops">
-          <text class="r-op" bindtap="ignoreReminder" data-id="{{item.id}}">忽略</text>
-          <text class="r-op" bindtap="snoozeReminder" data-id="{{item.id}}">延时提醒</text>
-          <text class="r-op exec" bindtap="executeReminder" data-target="{{item.actionTarget}}">{{item.actionLabel}}</text>
+      </block>
+
+      <!-- 待办区块 -->
+      <view class="section-title" style="margin-top:30rpx">
+        <text class="t">今日待办</text>
+        <text class="a tapt" bindtap="go" data-p="tasks">全部 {{todos.length}}</text>
+      </view>
+
+      <block wx:for="{{todos}}" wx:key="id">
+        <view class="todo-row tapt" bindtap="editTodo" data-id="{{item.id}}">
+          <view class="todo-check"></view>
+          <view class="todo-body">
+            <text class="todo-title">{{item.title}}</text>
+            <view class="todo-meta">
+              <view class="dot {{item.dot}}"></view>
+              <text class="txt">{{item.meta.text || item.meta}}</text>
+              <text wx:if="{{item.meta.photos && item.meta.photos.length}}" class="todo-cam">📷</text>
+            </view>
+          </view>
+          <view class="todo-tag" wx:if="{{item.tag}}">{{item.tag}}</view>
         </view>
+        <view style="height:30rpx"></view>
+      </block>
+
+      <view wx:if="{{todos.length === 0}}" style="margin-top:40rpx;padding:0 40rpx;text-align:center">
+        <text style="display:block;font-size:30rpx;color:var(--text-secondary)">还没有待办</text>
+        <text style="display:block;margin-top:12rpx;font-size:26rpx;color:var(--text-tertiary)">点底部「+」新建第一条吧</text>
       </view>
     </block>
 
-    <!-- 待办区块 -->
-    <view class="section-title" style="margin-top:30rpx">
-      <text class="t">今日待办</text>
-      <text class="a tapt" bindtap="go" data-p="tasks">全部 {{todos.length}}</text>
-    </view>
-
-    <block wx:for="{{todos}}" wx:key="id">
-      <view class="todo-row tapt" bindtap="editTodo" data-id="{{item.id}}">
-        <view class="todo-check"></view>
-        <view class="todo-body">
-          <text class="todo-title">{{item.title}}</text>
-          <view class="todo-meta">
-            <view class="dot {{item.dot}}"></view>
-            <text class="txt">{{item.meta.text || item.meta}}</text>
-            <text wx:if="{{item.meta.photos && item.meta.photos.length}}" class="todo-cam">📷</text>
-          </view>
-        </view>
-        <view class="todo-tag" wx:if="{{item.tag}}">{{item.tag}}</view>
+    <!-- 家庭空间：当前家庭共享流（自己 + 成员的共享项） -->
+    <block wx:if="{{space === 'family'}}">
+      <view class="section-title" style="margin-top:30rpx">
+        <text class="t">家庭共享</text>
+        <text class="a">{{sharedItems.length}} 项</text>
       </view>
-      <view style="height:30rpx"></view>
-    </block>
 
-    <view wx:if="{{todos.length === 0}}" style="margin-top:40rpx;padding:0 40rpx;text-align:center">
-      <text style="display:block;font-size:30rpx;color:var(--text-secondary)">还没有待办</text>
-      <text style="display:block;margin-top:12rpx;font-size:26rpx;color:var(--text-tertiary)">点底部「+」新建第一条吧</text>
-    </view>
+      <block wx:for="{{sharedItems}}" wx:key="id">
+        <view class="todo-row tapt" bindtap="openShared" data-id="{{item.id}}">
+          <view class="todo-check {{item.done ? 'done' : ''}}"></view>
+          <view class="todo-body">
+            <text class="todo-title">{{item.title}}</text>
+            <view class="todo-meta">
+              <view class="dot {{item.dot}}"></view>
+              <text class="txt">{{item.sharer}}{{item.sub ? (' · ' + item.sub) : ''}}</text>
+            </view>
+          </view>
+          <view class="todo-tag" wx:if="{{item.tag}}">{{item.tag}}</view>
+        </view>
+        <view style="height:30rpx"></view>
+      </block>
+
+      <view wx:if="{{familyEmpty}}" style="margin-top:40rpx;padding:0 40rpx;text-align:center">
+        <text style="display:block;font-size:30rpx;color:var(--text-secondary)">还没有家庭共享</text>
+        <text style="display:block;margin-top:12rpx;font-size:26rpx;color:var(--text-tertiary)">在编辑中开启「共享到家庭空间」，家庭成员就能看到</text>
+      </view>
+    </block>
 
     <view style="height:340rpx"></view>
   </scroll-view>
+
+  <shared-detail
+    wx:if="{{sharedDetail}}"
+    item="{{sharedDetail}}"
+    selfOpenid="{{selfOpenid}}"
+    bind:close="closeShared"
+    bind:updated="onSharedUpdated"
+    bind:edit="onSharedEdit"
+  />
 
   <!-- 底部合并操作条（搜索 + 新建） -->
   <view class="action-bar">

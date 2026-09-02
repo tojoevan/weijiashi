@@ -1,0 +1,39 @@
+<view wx:if="{{item}}" class="mask" bindtap="close">
+  <view class="sheet" catchtap="noop">
+    <view class="hd">
+      <view class="avatar">{{initial}}</view>
+      <view class="htx">
+        <text class="title">{{item.title}}</text>
+        <text class="sharer">{{item.sharer}} · {{typeLabel}}</text>
+      </view>
+      <view class="close" bindtap="close">×</view>
+    </view>
+
+    <scroll-view class="body" scroll-y>
+      <view class="row" wx:if="{{text}}">
+        <text class="k">内容</text><text class="v">{{text}}</text>
+      </view>
+      <view class="photos" wx:if="{{photos.length}}">
+        <image wx:for="{{photos}}" wx:key="*this" wx:for-item="ph" src="{{ph}}" class="ph" mode="aspectFill" />
+      </view>
+      <view class="row" wx:if="{{item.tag}}">
+        <text class="k">标签</text><text class="v">{{item.tag}}</text>
+      </view>
+      <view class="status {{done ? 'on' : ''}}" wx:if="{{item.type === 'todo'}}">
+        {{done ? '已完成' : '进行中'}}
+      </view>
+    </scroll-view>
+
+    <view class="ops">
+      <button wx:if="{{item.type === 'todo'}}" class="op {{done ? 'ghost' : 'primary'}}" bindtap="onToggleDone">
+        {{done ? '取消完成' : '标记完成'}}
+      </button>
+      <button wx:if="{{canEdit}}" class="op" bindtap="onEdit">编辑</button>
+      <view wx:if="{{isOwner}}" class="coedit">
+        <text class="cl">允许成员协作编辑</text>
+        <view class="switch {{item.co_edit ? 'on' : ''}}" bindtap="onToggleCoEdit"><view class="knob"></view></view>
+      </view>
+      <view wx:if="{{readOnly}}" class="hint">只读 · 成员可标记完成，不可改内容</view>
+    </view>
+  </view>
+</view>

@@ -2,6 +2,8 @@ const theme = require("../../utils/theme.js");
 const icons = require('../../utils/icons.js');
 const store = require('../../utils/store.js');
 const sync = require('../../utils/sync/index.js');
+const family = require('../../utils/family.js');
+const sharedFeed = require('../../utils/sharedFeed.js');
 
 const SECTION_KEY = 'js_sections_tasks';
 const SEED_SECTIONS = [
@@ -38,7 +40,11 @@ Page({
     sections: [],   // 全量（已归一化）
     view: [],       // 按 space 过滤后的展示列表
     total: 0,
-    empty: false
+    empty: false,
+    sharedItems: [],
+    sharedDetail: null,
+    selfOpenid: '',
+    familyEmpty: false
   },
   onLoad() {
     // 仅在本地模式首启时播种演示数据；已有数据（含手动清空后的 []）不再覆盖
@@ -46,13 +52,31 @@ Page({
   },
   onShow() {
     this.setData({ themeStyle: theme.getThemeStyle() });
-    this.setData({ space: getApp().globalData.space });
+    const space = getApp().globalData.space;
+    this.setData({ space });
+    if (space === 'family') this.loadFamily();
+    else this.loadPersonal();
+  },
+  // 个人空间：按房间归并的事务（本地 sections 文档）
+  loadPersonal() {
     sync.getSections().then(raw => {
       const sections = normalize(raw);
       const total = sections.reduce((n, s) => n + s.items.length, 0);
       this.setData({ sections, total });
       this.applySpace();
     });
+  },
+  // 家庭空间：聚合当前家庭的共享流（自己 + 成员）
+  loadFamily() {
+    sharedFeed.loadFamilyFeed().then(({ familyId, items, selfOpenid }) => {
+      this.setData({
+        familyId,
+        sharedItems: items,
+        selfOpenid,
+        familyEmpty: items.length === 0,
+        sharedDetail: null
+      });
+    }).catch(() => {});
   },
   // 按当前 space 过滤：家庭空间只看 dot==='family'，个人空间看其余
   applySpace() {
@@ -69,7 +93,24 @@ Page({
     const s = e.currentTarget.dataset.s;
     this.setData({ space: s });
     getApp().globalData.space = s;
-    this.applySpace();
+    if (s === 'family') this.loadFamily();
+    else this.loadPersonal();
+  },
+  // 家庭共享项 → 打开详情弹层
+  openShared(e) {
+    const id = e.currentTarget.dataset.id;
+    const it = (this.data.sharedItems || []).find((x) => x.id === id);
+    if (it) this.setData({ sharedDetail: it });
+  },
+  closeShared() { this.setData({ sharedDetail: null }); },
+  onSharedUpdated() { this.loadFamily(); },
+  onSharedEdit(e) {
+    const { id, type } = e.detail;
+    this.setData({ sharedDetail: null });
+    const url = type === 'archive'
+      ? '/pages/archive-detail/archive-detail?id=' + id
+      : '/pages/edit/edit?list=tasks&id=' + id;
+    wx.navigateTo({ url });
   },
   go(e) {
     const p = e.currentTarget.dataset.p;

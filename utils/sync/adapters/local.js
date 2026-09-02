@@ -54,7 +54,7 @@ const localAdapter = {
     const norm = (meta) => (meta && typeof meta === 'object') ? meta : (typeof meta === 'string' ? { text: meta } : {});
     const todos = (store.read(K.todos) || []).filter(t => t.shared).map(t => ({
       id: t.id, type: 'todo', title: t.title || '', tag: t.tag || '',
-      dot: t.dot || 'family', owner_openid: '', meta: norm(t.meta)
+      dot: t.dot || 'family', owner_openid: '', co_edit: 0, meta: norm(t.meta)
     }));
     const sections = store.read(K.sections) || [];
     const tasks = [];
@@ -76,7 +76,10 @@ const localAdapter = {
   },
   getImageUrl(key) {
     return key || '';
-  }
+  },
+  // 本地模式无跨成员共享，协作开关/完成切换均为空操作（保持签名一致）
+  setItemPerm() { return Promise.resolve({ ok: true }); },
+  setItemDone() { return Promise.resolve({ ok: true }); }
 };
 
 module.exports = localAdapter;

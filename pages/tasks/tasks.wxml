@@ -18,31 +18,58 @@
       <view class="space-seg {{space==='family'?'active':''}}" bindtap="setSpace" data-s="family"><view class="dot family"></view><text>家庭空间</text></view>
     </view>
 
-    <block wx:for="{{view}}" wx:key="title" wx:for-item="sec">
-      <view class="section-title" style="margin-top:30rpx">
-        <text class="t">{{sec.title}}</text>
-        <text class="a">{{sec.items.length}} 项</text>
+    <block wx:if="{{space === 'personal'}}">
+      <block wx:for="{{view}}" wx:key="title" wx:for-item="sec">
+        <view class="section-title" style="margin-top:30rpx">
+          <text class="t">{{sec.title}}</text>
+          <text class="a">{{sec.items.length}} 项</text>
+        </view>
+        <block wx:for="{{sec.items}}" wx:key="id" wx:for-item="it">
+          <view class="todo-row tapt" bindtap="editTodo" data-id="{{it.id}}">
+            <view class="todo-check"></view>
+            <view class="todo-body">
+              <text class="todo-title">{{it.title}}</text>
+              <view class="todo-meta">
+                <view class="dot {{it.dot}}"></view>
+                <text class="txt">{{it._text}}</text>
+              </view>
+            </view>
+            <view class="todo-tag" wx:if="{{it.tag}}">{{it.tag}}</view>
+          </view>
+          <view style="height:30rpx"></view>
+        </block>
+      </block>
+
+      <view wx:if="{{empty}}" class="empty">
+        <text class="e-t">还没有事务</text>
+        <text class="e-s">点下方的「+」新建，按物品归并你的维保与待办</text>
       </view>
-      <block wx:for="{{sec.items}}" wx:key="id" wx:for-item="it">
-        <view class="todo-row tapt" bindtap="editTodo" data-id="{{it.id}}">
-          <view class="todo-check"></view>
+    </block>
+
+    <block wx:if="{{space === 'family'}}">
+      <view class="section-title" style="margin-top:30rpx">
+        <text class="t">家庭共享</text>
+        <text class="a">{{sharedItems.length}} 项</text>
+      </view>
+      <block wx:for="{{sharedItems}}" wx:key="id">
+        <view class="todo-row tapt" bindtap="openShared" data-id="{{item.id}}">
+          <view class="todo-check {{item.done ? 'done' : ''}}"></view>
           <view class="todo-body">
-            <text class="todo-title">{{it.title}}</text>
+            <text class="todo-title">{{item.title}}</text>
             <view class="todo-meta">
-              <view class="dot {{it.dot}}"></view>
-              <text class="txt">{{it._text}}</text>
+              <view class="dot {{item.dot}}"></view>
+              <text class="txt">{{item.sharer}}{{item.sub ? (' · ' + item.sub) : ''}}</text>
             </view>
           </view>
-          <view class="todo-tag" wx:if="{{it.tag}}">{{it.tag}}</view>
+          <view class="todo-tag" wx:if="{{item.tag}}">{{item.tag}}</view>
         </view>
         <view style="height:30rpx"></view>
       </block>
+      <view wx:if="{{familyEmpty}}" class="empty">
+        <text class="e-t">还没有家庭共享</text>
+        <text class="e-s">在编辑中开启「共享到家庭空间」，家庭成员就能看到</text>
+      </view>
     </block>
-
-    <view wx:if="{{empty}}" class="empty">
-      <text class="e-t">还没有事务</text>
-      <text class="e-s">点下方的「+」新建，按物品归并你的维保与待办</text>
-    </view>
 
     <view style="height:340rpx"></view>
   </scroll-view>
@@ -64,4 +91,13 @@
       <view class="seg {{selected===3?'active':''}}" bindtap="go" data-p="mine"><image class="ic" src="{{icons.tabMine}}"/><text class="lb">我的</text></view>
     </view>
   </view>
+
+  <shared-detail
+    wx:if="{{sharedDetail}}"
+    item="{{sharedDetail}}"
+    selfOpenid="{{selfOpenid}}"
+    bind:close="closeShared"
+    bind:updated="onSharedUpdated"
+    bind:edit="onSharedEdit"
+  />
 </view>

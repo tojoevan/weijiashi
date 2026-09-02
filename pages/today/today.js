@@ -3,6 +3,8 @@ const icons = require('../../utils/icons.js');
 const store = require('../../utils/store.js');
 const sync = require('../../utils/sync/index.js');
 const profile = require('../../utils/profile.js');
+const family = require('../../utils/family.js');
+const sharedFeed = require('../../utils/sharedFeed.js');
 const { filterBySpace } = require('../../utils/space.js');
 
 const DISMISS_KEY = 'reminderDismissed';
@@ -101,7 +103,11 @@ Page({
     greeting: greeting(),
     greetName: profile.displayName(),
     todos: sync.mode === 'local' ? filterBySpace(store.ensure(TODO_KEY, SEED_TODOS), 'personal') : [],
-    visibleReminders: sync.mode === 'local' ? buildReminders(filterBySpace(SEED_TODOS, 'personal'), {}, Date.now()) : []
+    visibleReminders: sync.mode === 'local' ? buildReminders(filterBySpace(SEED_TODOS, 'personal'), {}, Date.now()) : [],
+    sharedItems: [],
+    sharedDetail: null,
+    selfOpenid: '',
+    familyEmpty: false
   },
   onShow() {
     this.setData({ themeStyle: theme.getThemeStyle() });
@@ -109,20 +115,53 @@ Page({
     const app = getApp();
     const space = app.globalData.space;
     this.setData({ space });
+    if (space === 'family') this.loadFamily();
+    else this.loadPersonal();
+  },
+  // 个人空间：仅展示自己的待办（含提醒）
+  loadPersonal() {
     sync.getTodos().then((todos) => {
       this._allTodos = todos;
-      const view = filterBySpace(todos, space);
-      this.setData({ todos: view });
+      const view = filterBySpace(todos, 'personal');
+      this.setData({ todos: view, sharedItems: [], sharedDetail: null });
       this.setData({ visibleReminders: buildReminders(view, loadDismissed(), Date.now()) });
     });
+  },
+  // 家庭空间：聚合当前家庭的共享流（自己 + 成员）
+  loadFamily() {
+    sharedFeed.loadFamilyFeed().then(({ familyId, items, selfOpenid }) => {
+      this.setData({
+        familyId,
+        sharedItems: items,
+        selfOpenid,
+        familyEmpty: items.length === 0,
+        sharedDetail: null,
+        visibleReminders: []
+      });
+    }).catch(() => {});
   },
   setSpace(e) {
     const s = e.currentTarget.dataset.s;
     this.setData({ space: s });
     getApp().globalData.space = s;
-    const view = filterBySpace(this._allTodos || [], s);
-    this.setData({ todos: view });
-    this.setData({ visibleReminders: buildReminders(view, loadDismissed(), Date.now()) });
+    if (s === 'family') this.loadFamily();
+    else this.loadPersonal();
+  },
+  // 家庭共享项 → 打开详情弹层
+  openShared(e) {
+    const id = e.currentTarget.dataset.id;
+    const it = (this.data.sharedItems || []).find((x) => x.id === id);
+    if (it) this.setData({ sharedDetail: it });
+  },
+  closeShared() { this.setData({ sharedDetail: null }); },
+  onSharedUpdated() { this.loadFamily(); },
+  onSharedEdit(e) {
+    const { id, type } = e.detail;
+    this.setData({ sharedDetail: null });
+    const url = type === 'archive'
+      ? '/pages/archive-detail/archive-detail?id=' + id
+      : '/pages/edit/edit?list=today&id=' + id;
+    wx.navigateTo({ url });
   },
   go(e) {
     const p = e.currentTarget.dataset.p;

@@ -47,6 +47,20 @@
       </block>
     </view>
 
+    <view class="input-card space-card" style="margin-top:30rpx" wx:if="{{!item.shared}}">
+      <view class="space-rows">
+        <view class="space-item tapt" bindtap="toggleCoEdit">
+          <view class="si-left">
+            <view class="si-text">
+              <text class="si-name">允许成员协作编辑</text>
+              <text class="si-desc">开启后家庭成员可修改内容</text>
+            </view>
+          </view>
+          <view class="switch {{coEdit?'on':''}}"><view class="knob"></view></view>
+        </view>
+      </view>
+    </view>
+
     <view class="btn-primary detail-btn" bindtap="share">
       <text class="btn-text">{{item.shared ? '已在家庭空间' : '分享到家庭空间'}}</text>
     </view>

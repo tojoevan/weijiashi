@@ -206,6 +206,7 @@ const cloudflareAdapter = {
         tag: t.tag || '',
         dot: t.dot || 'family',
         owner_openid: t.owner_openid || '',
+        co_edit: t.co_edit ? 1 : 0,
         meta: norm(t.meta)
       }));
       const archive = (r.archive || []).map((a) => {
@@ -217,6 +218,7 @@ const cloudflareAdapter = {
           tag: p.tag || '',
           dot: 'family',
           owner_openid: a.owner_openid || '',
+          co_edit: a.co_edit ? 1 : 0,
           payload: p
         };
       });
@@ -226,7 +228,7 @@ const cloudflareAdapter = {
       const norm = (meta) => (meta && typeof meta === 'object') ? meta : (typeof meta === 'string' ? { text: meta } : {});
       const todos = (store.read(K.todos) || []).filter((t) => t.shared).map((t) => ({
         id: t.id, type: 'todo', title: t.title || '', tag: t.tag || '',
-        dot: t.dot || 'family', owner_openid: '', meta: norm(t.meta)
+        dot: t.dot || 'family', owner_openid: '', co_edit: 0, meta: norm(t.meta)
       }));
       const sections = store.read(K.sections) || [];
       const tasks = [];
@@ -295,6 +297,14 @@ const cloudflareAdapter = {
   },
   familySetNickname(familyId, nickname) {
     return authReq('POST', '/family/nickname', { family_id: familyId, nickname: nickname || '' });
+  },
+  // 所有者切换某共享项的协作编辑开关（co_edit）
+  setItemPerm(id, coEdit) {
+    return authReq('POST', '/data/family/shared/perm', { id, co_edit: coEdit ? 1 : 0 });
+  },
+  // 家庭成员勾选/取消完成（仅对共享待办开放，与内容编辑解耦）
+  setItemDone(id, done) {
+    return authReq('POST', '/data/family/shared/done', { id, done: done ? 1 : 0 });
   }
 };
 

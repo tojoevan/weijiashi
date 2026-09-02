@@ -8,6 +8,7 @@ Page({
     themeStyle: theme.getThemeStyle(),
     icons,
     item: null,     // { id, type, payload, shared }
+    coEdit: false,  // 分享时是否允许成员协作编辑（默认关）
     photos: []      // 经 getImageUrl 解析后的可访问地址
   },
   onLoad(query) {
@@ -26,6 +27,9 @@ Page({
     family.ensureCurrentFamily().catch(() => {});
   },
   goBack() { wx.navigateBack(); },
+  toggleCoEdit() {
+    this.setData({ coEdit: !this.data.coEdit });
+  },
   async share() {
     const it = this.data.item;
     if (!it) return;
@@ -33,7 +37,7 @@ Page({
     // 确保拿到真实家庭 id（本地未记录时取第一个），避免写出 'default' 孤儿
     const famId = await family.ensureCurrentFamily();
     if (!famId) { wx.showToast({ title: '请先在「家庭」页进入一个家庭', icon: 'none' }); return; }
-    const updated = Object.assign({}, it, { shared: true, family_id: famId });
+    const updated = Object.assign({}, it, { shared: true, family_id: famId, co_edit: this.data.coEdit ? 1 : 0 });
     wx.showLoading({ title: '分享中' });
     sync.saveArchive(updated)
       .then(() => {

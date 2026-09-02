@@ -1,0 +1,26 @@
+/* 协作编辑开关（分享时设定初始 co_edit）—— 复用 edit 页同款视觉 */
+.space-card { padding-bottom: 14rpx; }
+.space-rows { margin-top: 6rpx; }
+.space-item {
+  display: flex; align-items: center; justify-content: space-between;
+  min-height: 92rpx;
+}
+.si-left { display: flex; align-items: center; gap: 20rpx; min-width: 0; }
+.si-text { display: flex; flex-direction: column; gap: 4rpx; min-width: 0; }
+.si-name { font-size: 28rpx; font-weight: 500; color: var(--text-primary); }
+.si-desc { font-size: 22rpx; color: var(--text-tertiary); }
+
+/* 开关 */
+.switch {
+  width: 92rpx; height: 52rpx; border-radius: 200rpx;
+  background: var(--border-strong); position: relative;
+  transition: background .22s; flex-shrink: 0;
+}
+.switch.on { background: var(--family); }
+.switch .knob {
+  position: absolute; top: 4rpx; left: 4rpx;
+  width: 44rpx; height: 44rpx; border-radius: 50%;
+  background: #fff; box-shadow: 0 2rpx 6rpx rgba(0,0,0,.18);
+  transition: left .22s;
+}
+.switch.on .knob { left: 44rpx; }

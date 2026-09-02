@@ -84,6 +84,16 @@ async function setMyNickname(familyId, nickname) {
   return cloud.familySetNickname(familyId, nickname);
 }
 
+// 所有者切换某共享项的协作编辑开关（co_edit）。
+async function setItemPerm(id, coEdit) {
+  return cloud.setItemPerm(id, coEdit);
+}
+
+// 家庭成员勾选/取消完成（共享待办，与内容编辑解耦）。
+async function setItemDone(id, done) {
+  return cloud.setItemDone(id, done);
+}
+
 // 兼容 pages/search/search.js：返回最近一次加载的成员快照（同步读取）。
 function getRawGroup() {
   return {
@@ -109,5 +119,7 @@ module.exports = {
   leaveFamily,
   transferFamily,
   setMyNickname,
+  setItemPerm,
+  setItemDone,
   getRawGroup
 };

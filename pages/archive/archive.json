@@ -1,4 +1,6 @@
 {
   "navigationStyle": "custom",
-  "usingComponents": {}
+  "usingComponents": {
+    "shared-detail": "/components/shared-detail/shared-detail"
+  }
 }
