@@ -129,7 +129,7 @@ Page({
   },
   // 家庭空间：聚合当前家庭的共享流（自己 + 成员）
   loadFamily() {
-    sharedFeed.loadFamilyFeed().then(({ familyId, items, selfOpenid }) => {
+    sharedFeed.loadFamilyFeed(['todo', 'task']).then(({ familyId, items, selfOpenid }) => {
       this.setData({
         familyId,
         sharedItems: items,
@@ -156,7 +156,7 @@ Page({
   closeShared() { this.setData({ sharedDetail: null }); },
   onSharedUpdated() {
     const currentId = this.data.sharedDetail ? this.data.sharedDetail.id : null;
-    sharedFeed.loadFamilyFeed().then(({ familyId, items, selfOpenid }) => {
+    sharedFeed.loadFamilyFeed(['todo', 'task']).then(({ familyId, items, selfOpenid }) => {
       const detail = currentId ? (items.find((x) => x.id === currentId) || null) : null;
       this.setData({
         familyId,
