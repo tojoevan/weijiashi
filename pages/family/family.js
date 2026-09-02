@@ -40,14 +40,21 @@ Page({
     this.reload();
   },
   // 加载家庭列表 + 当前家庭的成员 + 邀请码 + 共享内容
+  // 首个请求拿家庭列表确定 family_id；成员/邀请码/共享内容三个请求只依赖
+  // family_id 且互相独立，Promise.all 并行拉取（跨境链路串行时约 3 个额外
+  // 往返，并行后整体耗时约等于最慢的那一个）。
   async reload() {
     try {
       const families = await family.listFamilies();
       let current = family.getCurrentFamily();
       if (!current && families.length) current = families[0].family_id;
       const fam = families.find((f) => f.family_id === current) || families[0] || null;
-      const members = fam ? await family.getMembers(fam.family_id) : [];
-      const code = fam ? await family.ensureInviteCode(fam.family_id) : '';
+      const famId = fam ? fam.family_id : '';
+      const [members, code, shared] = await Promise.all([
+        fam ? family.getMembers(famId) : Promise.resolve([]),
+        fam ? family.ensureInviteCode(famId) : Promise.resolve(null),
+        sync.getShared(famId)
+      ]);
       this.setData({
         families,
         currentFamily: fam ? fam.family_id : '',
@@ -61,7 +68,6 @@ Page({
         inviteCode: code || ''
       });
       // 共享内容：按当前家庭过滤（含其他成员的共享项）
-      const shared = await sync.getShared(fam ? fam.family_id : '');
       const membersMap = {};
       members.forEach((m) => { membersMap[m.openid] = m; });
       const sharedItems = shared.map((it) => {
