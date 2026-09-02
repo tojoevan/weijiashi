@@ -49,16 +49,22 @@ const localAdapter = {
     return Promise.resolve();
   },
 
-  // ---- 家庭共享：收集本地 shared=true 的项 ----
-  getShared() {
-    const todos = store.read(K.todos) || [];
-    const sections = store.read(K.sections) || [];
-    const out = [];
-    todos.forEach(t => { if (t.shared) out.push(Object.assign({ __type: 'todo' }, t)); });
-    sections.forEach(sec => (sec.items || []).forEach(it => {
-      if (it.shared) out.push(Object.assign({ __type: 'task', __section: sec.title }, it));
+  // ---- 家庭共享：收集本地 shared=true 的项（结构同云端） ----
+  getShared(familyId) {
+    const norm = (meta) => (meta && typeof meta === 'object') ? meta : (typeof meta === 'string' ? { text: meta } : {});
+    const todos = (store.read(K.todos) || []).filter(t => t.shared).map(t => ({
+      id: t.id, type: 'todo', title: t.title || '', tag: t.tag || '',
+      dot: t.dot || 'family', owner_openid: '', meta: norm(t.meta)
     }));
-    return Promise.resolve(out);
+    const sections = store.read(K.sections) || [];
+    const tasks = [];
+    sections.forEach(sec => (sec.items || []).forEach(it => {
+      if (it.shared) tasks.push({
+        id: it.id, type: 'task', title: it.title || '', tag: it.tag || '',
+        dot: it.dot || 'family', owner_openid: '', meta: norm(it.meta)
+      });
+    }));
+    return Promise.resolve(todos.concat(tasks));
   },
 
   // ---- 账号 / 图片（本地模式不支持） ----

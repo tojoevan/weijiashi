@@ -2,6 +2,7 @@ const theme = require("../../utils/theme.js");
 const icons = require('../../utils/icons.js');
 const store = require('../../utils/store.js');
 const sync = require('../../utils/sync/index.js');
+const family = require('../../utils/family.js');
 
 // 不同来源对应不同的存储 key 与数据结构
 const MAP = {
@@ -175,7 +176,9 @@ Page({
       metaTextVal = form.meta; // 事务：保持原「备注」行为
     }
     const meta = { text: metaTextVal, photos: keys, due };
-    const patch = { id: id, title: form.title, meta, tag: form.tag, shared: shared, dot: shared ? 'family' : 'brand' };
+    // 共享时把当前家庭 id 写入，家庭共享列表才能按家庭过滤、并显示其他成员分享
+    const famId = shared ? (family.getCurrentFamily && family.getCurrentFamily()) || null : null;
+    const patch = { id: id, title: form.title, meta, tag: form.tag, shared: shared, dot: shared ? 'family' : 'brand', family_id: famId };
     if (list === 'today') patch.item = item;
     // 保存反馈与关闭不依赖网络：适配器已做本地乐观写入，云端同步放后台。
     // try/catch 兜底，确保 toast + 关闭一定执行（云端不可达时也不会卡住页面）。

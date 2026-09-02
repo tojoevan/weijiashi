@@ -1,138 +1,95 @@
-// 家庭成员（本地优先，云就绪）。
-// 当前 CLOUD_ENABLED=false 时，家庭组仅存于本机 storage；
-// 待后端 family_groups / family_members 接口补齐后，本模块可平滑切换为云端读写
-// （对外接口签名保持不变，页面无需改动）。
-// 设计约束：
-//  - 家庭组以「本机用户」为拥有者，首次进入即把自己设为管理员；
-//  - 角色仅两种：admin(管理员) / member(成员)；
-//  - 仅管理员可邀请、改角色、移除成员，且不能移除/改自己的角色（避免清空管理员）。
-const KEY = 'family_group';
-const ROLES = { ADMIN: 'admin', MEMBER: 'member' };
-const ROLE_LABEL = { admin: '管理员', member: '成员' };
+// 家庭（多家庭模型，每人最多 3 个）——云端实现。
+// 所有成员名册、邀请、归属都落在数据湖；本模块只是薄封装 + 当前家庭的本地持久化。
+// 依赖 sync._adapter（CLOUD_ENABLED=true 时为 cloudflare 适配器，含 family* 方法）。
+const sync = require('./sync/index.js');
+const cloud = sync._adapter;
 
-const profile = require('./profile.js');
+const CURRENT_KEY = 'js_current_family';
+const _inviteCache = {};       // family_id -> code，避免反复生成邀请
+let _memberCache = [];         // 最近一次加载的当前家庭成员（供 search.js 同步读取）
 
-function readGroup() {
-  try { return wx.getStorageSync(KEY) || null; } catch (e) { return null; }
+function getCurrentFamily() {
+  try { return wx.getStorageSync(CURRENT_KEY) || null; } catch (e) { return null; }
 }
-function writeGroup(g) {
-  try { wx.setStorageSync(KEY, g); } catch (e) {}
-  return g;
-}
-function uid() {
-  return 'm_' + Date.now().toString(36) + Math.random().toString(36).slice(2, 7);
-}
-function inviteToken() {
-  return Date.now().toString(36) + Math.random().toString(36).slice(2, 6);
+function setCurrentFamily(id) {
+  try {
+    if (id) wx.setStorageSync(CURRENT_KEY, id);
+    else wx.removeStorageSync(CURRENT_KEY);
+  } catch (e) {}
 }
 
-// 确保家庭组对象存在（不自动加成员）。
-function ensureGroup() {
-  let g = readGroup();
-  if (g) return g;
-  g = { id: 'fg_' + uid(), name: '我家', createdAt: Date.now(), members: [], invites: [] };
-  return writeGroup(g);
+async function listFamilies() {
+  const r = await cloud.familyMine();
+  const list = Array.isArray(r) ? r : [];
+  const cur = getCurrentFamily();
+  if (!list.some((f) => f.family_id === cur) && list.length) setCurrentFamily(list[0].family_id);
+  return list;
 }
-function getRawGroup() { return ensureGroup(); }
 
-function getSelf(g) {
-  g = g || getRawGroup();
-  return (g.members || []).find(m => m.isSelf) || null;
+async function createFamily(name) {
+  const r = await cloud.familyCreate(name);
+  if (r && r.family_id) setCurrentFamily(r.family_id);
+  return r;
 }
-function getSelfRole(g) {
-  const s = getSelf(g);
-  return s ? s.role : null;
-}
-function canManage(g) { return getSelfRole(g) === ROLES.ADMIN; }
 
-// 确保本机用户作为成员存在（默认管理员）。已存在则原样返回，不改角色。
-function ensureSelf(role) {
-  const g = getRawGroup();
-  let self = getSelf(g);
-  if (!self) {
-    self = {
-      id: uid(),
-      name: profile.getName() || profile.displayName(),
-      avatar: profile.getAvatar() || '',
-      role: role || ROLES.ADMIN,
-      isSelf: true
-    };
-    g.members.push(self);
-    writeGroup(g);
+async function ensureInviteCode(familyId) {
+  if (!familyId) return null;
+  if (!_inviteCache[familyId]) {
+    const r = await cloud.familyInvite(familyId);
+    if (r && r.code) _inviteCache[familyId] = r.code;
   }
-  return self;
+  return _inviteCache[familyId] || null;
 }
 
-// 手动添加成员（本地模式填充家庭名册的主要方式；也可经分享邀请接受入组）。
-function addMember(input) {
-  const g = getRawGroup();
-  const m = {
-    id: uid(),
-    name: ((input && input.name) || '').trim() || '成员',
-    avatar: (input && input.avatar) || '',
-    role: (input && input.role) || ROLES.MEMBER,
-    isSelf: false,
-    invitedBy: (input && input.invitedBy) || ''
+async function previewInvite(code) {
+  return cloud.familyInviteInfo(code);
+}
+
+async function acceptInvite(code, nickname) {
+  const r = await cloud.familyAccept(code, nickname);
+  if (r && r.joined && r.family_id) setCurrentFamily(r.family_id);
+  return r;
+}
+
+async function getMembers(familyId) {
+  const list = await cloud.familyMembers(familyId);
+  const arr = Array.isArray(list) ? list : [];
+  _memberCache = arr;
+  return arr;
+}
+
+async function leaveFamily(familyId) {
+  const r = await cloud.familyLeave(familyId);
+  if (getCurrentFamily() === familyId) setCurrentFamily(null);
+  return r;
+}
+
+async function transferFamily(familyId, toOpenid) {
+  return cloud.familyTransfer(familyId, toOpenid);
+}
+
+// 兼容 pages/search/search.js：返回最近一次加载的成员快照（同步读取）。
+function getRawGroup() {
+  return {
+    members: _memberCache.map((m) => ({
+      id: m.openid,
+      name: m.nickname || '成员',
+      role: m.role,
+      isSelf: false
+    }))
   };
-  g.members.push(m);
-  writeGroup(g);
-  return m;
-}
-
-// 接受邀请：将本机用户加入家庭组（云就绪：云端模式下此处改为 POST 家庭成员）。
-// 若本机已有成员身份则直接返回（避免重复）；否则以「成员」身份加入。
-function acceptInvite(fromName) {
-  const g = getRawGroup();
-  let self = getSelf(g);
-  if (self) return self;
-  const m = {
-    id: uid(),
-    name: profile.getName() || profile.displayName() || '我',
-    avatar: profile.getAvatar() || '',
-    role: ROLES.MEMBER,
-    isSelf: true,
-    invitedBy: fromName || ''
-  };
-  g.members.push(m);
-  writeGroup(g);
-  return m;
-}
-
-// 移除成员：仅管理员、且不能移除自己。
-function removeMember(memberId) {
-  const g = getRawGroup();
-  if (!canManage(g)) return false;
-  const m = (g.members || []).find(x => x.id === memberId);
-  if (!m || m.isSelf) return false;
-  g.members = g.members.filter(x => x.id !== memberId);
-  writeGroup(g);
-  return true;
-}
-
-// 设置角色：仅管理员、且不能改自己的角色。
-function setRole(memberId, role) {
-  const g = getRawGroup();
-  if (!canManage(g)) return false;
-  if (role !== ROLES.ADMIN && role !== ROLES.MEMBER) return false;
-  const m = (g.members || []).find(x => x.id === memberId);
-  if (!m || m.isSelf) return false;
-  m.role = role;
-  writeGroup(g);
-  return true;
-}
-
-// 创建邀请：返回 token（分享卡片 path 携带）；真实跨设备入组待云端接口。
-function createInvite() {
-  const g = getRawGroup();
-  const t = inviteToken();
-  g.invites = g.invites || [];
-  g.invites.push({ token: t, byName: profile.displayName(), createdAt: Date.now() });
-  writeGroup(g);
-  return t;
 }
 
 module.exports = {
-  ROLES, ROLE_LABEL,
-  ensureGroup, getRawGroup, getSelf, getSelfRole, canManage, ensureSelf,
-  addMember, acceptInvite, removeMember, setRole, createInvite
+  getCurrentFamily,
+  setCurrentFamily,
+  listFamilies,
+  createFamily,
+  ensureInviteCode,
+  previewInvite,
+  acceptInvite,
+  getMembers,
+  leaveFamily,
+  transferFamily,
+  getRawGroup
 };

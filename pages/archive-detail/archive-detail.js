@@ -1,6 +1,7 @@
 const theme = require("../../utils/theme.js");
 const icons = require('../../utils/icons.js');
 const sync = require('../../utils/sync/index.js');
+const family = require('../../utils/family.js');
 
 Page({
   data: {
@@ -27,7 +28,9 @@ Page({
     const it = this.data.item;
     if (!it) return;
     if (it.shared) { wx.showToast({ title: '已在家庭空间', icon: 'none' }); return; }
-    const updated = Object.assign({}, it, { shared: true, family_id: 'default' });
+    // 写入当前真实家庭 id（替换旧写死的 'default'），家庭共享才能按家庭过滤
+    const famId = (family.getCurrentFamily && family.getCurrentFamily()) || 'default';
+    const updated = Object.assign({}, it, { shared: true, family_id: famId });
     wx.showLoading({ title: '分享中' });
     sync.saveArchive(updated)
       .then(() => {

@@ -2,6 +2,10 @@
 project.config.json
 project.private.config.json
 
+# ===== 云同步配置（含真实网关地址，勿提交）=====
+# 模板见 utils/sync/config.example.js —— 首次 clone 后复制为 config.js
+utils/sync/config.js
+
 # ===== 内部维护文档（非项目交付物）=====
 发布维护备忘录.md
 
@@ -18,3 +22,6 @@ node_modules/
 .DS_Store
 Thumbs.db
 *.log
+
+# ===== Agent 工作记忆（含内部拓扑 / 发布流程细节，勿入库）=====
+.workbuddy/

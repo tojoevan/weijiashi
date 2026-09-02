@@ -29,33 +29,53 @@
       </view>
     </view>
 
-    <view class="fam-hero">
-      <view class="f-ic"><image src="{{icons.famGroup}}"/></view>
-      <view class="f-text">
-        <text class="f-title">{{groupName}} · {{members.length}} 位成员</text>
-        <text class="f-sub">共享待办与物品档案 · 数据实时同步</text>
+    <!-- 家庭切换器（多家庭） -->
+    <view class="section-title" style="margin-top:36rpx" wx:if="{{families.length}}">
+      <text class="t">我的家庭</text>
+      <text class="a">{{families.length}}/3</text>
+    </view>
+    <view class="fam-switch" wx:if="{{families.length}}">
+      <view wx:for="{{families}}" wx:key="family_id"
+            class="fam-chip {{item.family_id === currentFamily ? 'active' : ''}}"
+            bindtap="tapFamily" data-id="{{item.family_id}}">{{item.name}}</view>
+      <view wx:if="{{families.length < 3}}" class="fam-chip add" bindtap="showCreate">+ 创建</view>
+    </view>
+
+    <!-- 当前家庭 -->
+    <block wx:if="{{currentFamily}}">
+      <view class="fam-hero">
+        <view class="f-ic"><image src="{{icons.famGroup}}"/></view>
+        <view class="f-text">
+          <text class="f-title">{{currentName}} · {{members.length}} 位成员</text>
+          <text class="f-sub">共享待办与物品档案 · 数据实时同步</text>
+        </view>
+      </view>
+
+      <view class="member-row form" wx:for="{{members}}" wx:key="openid">
+        <view class="avatar {{item.is_self ? 'self' : 'family'}}">{{item.initial}}</view>
+        <text class="m-name">{{item.nickname}}{{item.is_self ? '（我）' : ''}}</text>
+        <view class="pill {{item.role === 'owner' ? 'brand' : 'muted'}}">{{item.roleLabel}}</view>
+      </view>
+
+      <button class="invite-share" open-type="share">
+        <view class="iic share"></view>
+        <text class="it">邀请微信好友</text>
+      </button>
+      <view class="copy-link" bindtap="copyInvite">或复制邀请说明</view>
+
+      <view class="leave-btn" bindtap="leaveOrTransfer">
+        {{selfRole === 'owner' ? '转让并退出家庭' : '退出家庭'}}
+      </view>
+    </block>
+
+    <!-- 还没有任何家庭 -->
+    <view wx:else class="empty-tip">
+      <text>还没有家庭空间</text>
+      <view class="invite-btn" style="margin-top:24rpx" bindtap="showCreate">
+        <view class="iic"></view>
+        <text class="it">创建我的第一个家庭</text>
       </view>
     </view>
-
-    <!-- 成员列表 -->
-    <view class="member-row form" wx:for="{{members}}" wx:key="id"
-          bindtap="tapMember" data-id="{{item.id}}">
-      <image wx:if="{{item.avatar}}" class="avatar img" src="{{item.avatar}}"/>
-      <view wx:else class="avatar {{item.isSelf ? 'self' : 'family'}}">{{item.initial}}</view>
-      <text class="m-name">{{item.name}}{{item.isSelf ? '（我）' : ''}}</text>
-      <view class="pill {{item.role === 'admin' ? 'brand' : 'muted'}}">{{item.role === 'admin' ? '管理员' : '成员'}}</view>
-    </view>
-
-    <view class="invite-btn" style="margin-top:40rpx" bindtap="showAdd">
-      <view class="iic"></view>
-      <text class="it">添加成员</text>
-    </view>
-
-    <button class="invite-share" open-type="share">
-      <view class="iic share"></view>
-      <text class="it">邀请微信好友</text>
-    </button>
-    <view class="copy-link" bindtap="copyInvite">或复制邀请说明</view>
 
     <view class="section-title" style="margin-top:56rpx">
       <text class="t">家庭共享</text>
@@ -63,11 +83,16 @@
     </view>
 
     <view class="share-list">
-      <view class="share-row form" wx:for="{{sharedItems}}" wx:key="id">
+      <view class="share-row form" wx:for="{{sharedItems}}" wx:key="id"
+            bindtap="openShared" data-id="{{item.id}}">
         <view class="dot {{item.dot}}"></view>
         <view class="sr-body">
-          <text class="sr-title">{{item.title}}</text>
+          <view class="sr-text">
+            <text class="sr-title">{{item.title}}</text>
+            <text class="sr-sharer">{{item.sharer}} 分享</text>
+          </view>
           <text class="sr-tag" wx:if="{{item.tag}}">{{item.tag}}</text>
+          <view class="sr-arrow"></view>
         </view>
       </view>
       <view class="share-empty" wx:if="{{sharedItems.length === 0}}">
@@ -77,4 +102,24 @@
 
     <view class="detail-foot"></view>
   </scroll-view>
+
+  <!-- 共享项详情弹层 -->
+  <view wx:if="{{detail}}" class="sd-mask" bindtap="closeShared">
+    <view class="sd-card" catchtap="">
+      <view class="sd-head">
+        <view class="sd-ic"><image src="{{icons.famGroup}}"/></view>
+        <text class="sd-title">{{detail.title}}</text>
+        <view class="sd-close" bindtap="closeShared">×</view>
+      </view>
+      <view class="sd-meta">
+        <text class="sd-sharer">{{detail.sharer}} 分享</text>
+        <text wx:if="{{detail.tag}}" class="sd-tag">{{detail.tag}}</text>
+      </view>
+      <text wx:if="{{detail.text}}" class="sd-text">{{detail.text}}</text>
+      <view wx:if="{{detail.photos.length}}" class="sd-photos">
+        <image wx:for="{{detail.photos}}" wx:key="*this" src="{{item}}" class="sd-photo" mode="aspectFill"/>
+      </view>
+      <text wx:if="{{detail.due}}" class="sd-due">时间：{{detail.due}}</text>
+    </view>
+  </view>
 </view>

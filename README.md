@@ -90,7 +90,13 @@
 
 ## ☁️ 启用云端同步与家庭共享
 
-编辑 `utils/sync/config.js`：
+首次 clone 后，先复制配置模板（真实配置文件不入库，缺失会导致小程序无法启动）：
+
+```bash
+cp utils/sync/config.example.js utils/sync/config.js
+```
+
+然后编辑 `utils/sync/config.js`：
 
 ```js
 module.exports = {
@@ -124,7 +130,10 @@ module.exports = {
 
 - 所有域名在文档 / 配置中以占位符表示（`your-gateway-domain.example.com`、`your-cloudflare-domain.example.com`）。
 - 微信 `AppID` 仅在你的本地 `project.config.json`（已加入 `.gitignore`）中。
+- 网关地址仅在你的本地 `utils/sync/config.js`（已加入 `.gitignore`）中；仓库只提供模板 `utils/sync/config.example.js`。
 - 密钥（`INTERNAL_KEY` / `APP_SECRET` / `AUTH_SECRET`）一律通过环境变量 / `wrangler secret` 注入，不进代码。
+
+> 这两个本地文件不入库，所以 clone 后必须各自重建，否则小程序无法运行。
 
 ---
 

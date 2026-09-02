@@ -193,32 +193,50 @@ const cloudflareAdapter = {
     return authReq('DELETE', '/data/archive/' + id).then(() => {}).catch(() => {});
   },
 
-  // ---- 家庭共享：合并云端 todos + archive，离线回退本地收集 ----
-  getShared() {
-    return authReq('GET', '/data/family/shared').then((r) => {
+  // ---- 家庭共享：按当前家庭过滤，合并云端 todos + archive（含其他成员） ----
+  // familyId 省略时退化为租户全量（旧单家庭兼容），传入则只取该家庭共享项。
+  getShared(familyId) {
+    const q = familyId ? ('?family=' + encodeURIComponent(familyId)) : '';
+    return authReq('GET', '/data/family/shared' + q).then((r) => {
+      const norm = (meta) => (meta && typeof meta === 'object') ? meta : (typeof meta === 'string' ? { text: meta } : {});
       const todos = (r.todos || []).map((t) => ({
         id: t.id,
+        type: 'todo',
         title: t.title || '',
         tag: t.tag || '',
-        dot: t.dot || 'family'
+        dot: t.dot || 'family',
+        owner_openid: t.owner_openid || '',
+        meta: norm(t.meta)
       }));
       const archive = (r.archive || []).map((a) => {
         const p = (a.payload && typeof a.payload === 'object') ? a.payload : {};
         return {
           id: a.id,
+          type: 'archive',
           title: p.title || a.id,
           tag: p.tag || '',
-          dot: 'family'
+          dot: 'family',
+          owner_openid: a.owner_openid || '',
+          payload: p
         };
       });
       return todos.concat(archive);
     }).catch(() => {
-      const todos = store.read(K.todos) || [];
+      // 离线回退：仅本机 shared=true 的项，结构同上
+      const norm = (meta) => (meta && typeof meta === 'object') ? meta : (typeof meta === 'string' ? { text: meta } : {});
+      const todos = (store.read(K.todos) || []).filter((t) => t.shared).map((t) => ({
+        id: t.id, type: 'todo', title: t.title || '', tag: t.tag || '',
+        dot: t.dot || 'family', owner_openid: '', meta: norm(t.meta)
+      }));
       const sections = store.read(K.sections) || [];
-      const out = [];
-      todos.forEach((t) => { if (t.shared) out.push(t); });
-      sections.forEach((sec) => (sec.items || []).forEach((it) => { if (it.shared) out.push(it); }));
-      return out;
+      const tasks = [];
+      sections.forEach((sec) => (sec.items || []).forEach((it) => {
+        if (it.shared) tasks.push({
+          id: it.id, type: 'task', title: it.title || '', tag: it.tag || '',
+          dot: it.dot || 'family', owner_openid: '', meta: norm(it.meta)
+        });
+      }));
+      return todos.concat(tasks);
     });
   },
 
@@ -247,6 +265,33 @@ const cloudflareAdapter = {
     if (key.indexOf('/t/') === 0) return API + '/api/data' + key.slice(key.indexOf('/img/'));
     if (key.indexOf('/img/') === 0) return API + '/api/data' + key;
     return API + '/api/data/img/' + key;
+  },
+
+  // ---- 家庭（多家庭模型，每人最多 3 个）----
+  // 全部走网关 /api/family/*（authReq 已带会话令牌，网关注入 openid）。
+  familyCreate(name) {
+    return authReq('POST', '/family', { name: name || '我的家庭' });
+  },
+  familyMine() {
+    return authReq('GET', '/family/mine');
+  },
+  familyInvite(familyId) {
+    return authReq('POST', '/family/invite', { family_id: familyId });
+  },
+  familyInviteInfo(code) {
+    return authReq('GET', '/family/invite/info?code=' + encodeURIComponent(code));
+  },
+  familyAccept(code, nickname) {
+    return authReq('POST', '/family/accept', { code, nickname: nickname || '' });
+  },
+  familyMembers(familyId) {
+    return authReq('GET', '/family/members?family_id=' + encodeURIComponent(familyId));
+  },
+  familyLeave(familyId) {
+    return authReq('POST', '/family/leave', { family_id: familyId });
+  },
+  familyTransfer(familyId, toOpenid) {
+    return authReq('POST', '/family/transfer', { family_id: familyId, to_openid: toOpenid });
   }
 };
 
