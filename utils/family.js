@@ -31,10 +31,10 @@ function getCurrentFamilyInfo() {
   return { id, name: f ? f.name : '' };
 }
 
-// 家庭空间分段标签：space 非 family 直接返回「家庭空间」；
-// 否则拼上当前家庭名（超 max 字截断加省略号）。仅展示、不切换。
+// 家庭空间分段标签（无论当前选中个人还是家庭都显示当前家庭名）。
+// 有当前家庭 →「家庭空间 · 名字」（超 max 字截断加省略号）；无当前家庭 →「家庭空间」。
+// space 参数保留仅为兼容既有调用，名字展示与其无关（仅展示、不切换）。
 function familySpaceLabel(space, max) {
-  if (space !== 'family') return '家庭空间';
   const info = getCurrentFamilyInfo();
   const name = info.name || '';
   const cut = max && name.length > max ? name.slice(0, max) + '…' : name;
