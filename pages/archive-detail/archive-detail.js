@@ -22,14 +22,17 @@ Page({
         this.setData({ item: it, photos });
       })
       .catch(() => { wx.showToast({ title: '加载失败', icon: 'none' }); });
+    // 预热当前家庭，确保分享时能拿到 family_id（避免写出 'default' 孤儿）
+    family.ensureCurrentFamily().catch(() => {});
   },
   goBack() { wx.navigateBack(); },
-  share() {
+  async share() {
     const it = this.data.item;
     if (!it) return;
     if (it.shared) { wx.showToast({ title: '已在家庭空间', icon: 'none' }); return; }
-    // 写入当前真实家庭 id（替换旧写死的 'default'），家庭共享才能按家庭过滤
-    const famId = (family.getCurrentFamily && family.getCurrentFamily()) || 'default';
+    // 确保拿到真实家庭 id（本地未记录时取第一个），避免写出 'default' 孤儿
+    const famId = await family.ensureCurrentFamily();
+    if (!famId) { wx.showToast({ title: '请先在「家庭」页进入一个家庭', icon: 'none' }); return; }
     const updated = Object.assign({}, it, { shared: true, family_id: famId });
     wx.showLoading({ title: '分享中' });
     sync.saveArchive(updated)

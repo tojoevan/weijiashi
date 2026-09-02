@@ -111,6 +111,8 @@ Page({
       shared: item.shared === true || item.dot === 'family',
       photos: metaPhotos(item.meta).map((k) => ({ url: sync.getImageUrl(k), key: k }))
     });
+    // 预热当前家庭，确保分享时能拿到 family_id（避免写出 null/'default' 孤儿）
+    family.ensureCurrentFamily().catch(() => {});
   },
   onShow() {
     this.setData({ themeStyle: theme.getThemeStyle() });

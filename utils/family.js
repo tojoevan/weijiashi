@@ -27,6 +27,15 @@ async function listFamilies() {
   return list;
 }
 
+// 确保存在一个"当前家庭"：本地未记录时取列表第一个并落存。
+// 避免编辑/档案页直接分享时拿不到 family_id，写出 null/'default' 孤儿（谁的家庭都查不到）。
+async function ensureCurrentFamily() {
+  const cur = getCurrentFamily();
+  if (cur) return cur;
+  await listFamilies();
+  return getCurrentFamily();
+}
+
 async function createFamily(name) {
   const nick = profile.isSet() ? profile.displayName() : '';
   const r = await cloud.familyCreate(name, nick);
@@ -91,6 +100,7 @@ module.exports = {
   getCurrentFamily,
   setCurrentFamily,
   listFamilies,
+  ensureCurrentFamily,
   createFamily,
   ensureInviteCode,
   previewInvite,
