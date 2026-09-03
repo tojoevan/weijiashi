@@ -9,6 +9,7 @@ const CURRENT_KEY = 'js_current_family';
 const FAM_LIST_KEY = 'js_family_list';   // 家庭列表本地缓存（同步读名字，免每次开页打云端）
 const _inviteCache = {};       // family_id -> code，避免反复生成邀请
 let _memberCache = [];         // 最近一次加载的当前家庭成员（供 search.js 同步读取）
+let _listPromise = null;        // 家庭列表请求 in-flight 守卫（并发去重：同刻多调用合并为一次）
 
 function getCurrentFamily() {
   try { return wx.getStorageSync(CURRENT_KEY) || null; } catch (e) { return null; }
@@ -41,13 +42,22 @@ function familySpaceLabel(space, max) {
   return cut ? '家庭空间 · ' + cut : '家庭空间';
 }
 
-async function listFamilies() {
-  const r = await cloud.familyMine();
-  const list = Array.isArray(r) ? r : [];
-  try { wx.setStorageSync(FAM_LIST_KEY, list); } catch (e) {}
-  const cur = getCurrentFamily();
-  if (!list.some((f) => f.family_id === cur) && list.length) setCurrentFamily(list[0].family_id);
-  return list;
+// 取当前用户的家庭列表。带 in-flight 去重：同一时刻的多次调用共享同一个请求，
+// 避免三主 tab onShow 同发多请求放大跨境链路。结果落盘缓存供名字同步读取。
+function listFamilies() {
+  if (!_listPromise) {
+    const p = (async () => {
+      const r = await cloud.familyMine();
+      const list = Array.isArray(r) ? r : [];
+      try { wx.setStorageSync(FAM_LIST_KEY, list); } catch (e) {}
+      const cur = getCurrentFamily();
+      if (!list.some((f) => f.family_id === cur) && list.length) setCurrentFamily(list[0].family_id);
+      return list;
+    })();
+    _listPromise = p;
+    p.finally(() => { _listPromise = null; });
+  }
+  return _listPromise;
 }
 
 // 确保存在一个"当前家庭"：本地未记录时取列表第一个并落存。
@@ -57,6 +67,15 @@ async function ensureCurrentFamily() {
   if (cur) return cur;
   await listFamilies();
   return getCurrentFamily();
+}
+
+// 确保当前家庭名可用：缓存缺名字但有 family_id 时，异步补拉列表并落盘。
+// 返回 Promise；resolve 后 getCurrentFamilyInfo().name 即可用（用于冷启动个人空间自愈）。
+async function ensureFamilyInfo() {
+  const info = getCurrentFamilyInfo();
+  if (info.name || !info.id) return info;
+  await listFamilies().catch(() => {});
+  return getCurrentFamilyInfo();
 }
 
 async function createFamily(name) {
@@ -132,6 +151,7 @@ function getRawGroup() {
 module.exports = {
   getCurrentFamily,
   getCurrentFamilyInfo,
+  ensureFamilyInfo,
   familySpaceLabel,
   setCurrentFamily,
   listFamilies,

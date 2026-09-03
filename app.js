@@ -1,4 +1,5 @@
 const sync = require('./utils/sync/index.js');
+const family = require('./utils/family.js');
 
 // 待处理邀请的本地存储键（与 family.js 一样由模块自持，沿用 js_ 前缀）。
 const INVITE_KEY = 'js_pending_invite';
@@ -22,6 +23,11 @@ App({
     // 即使此处尚未完成，适配器在首次数据请求遇到 401 也会自动重新登录重试。
     if (sync.enabled && typeof sync.preLogin === 'function') {
       sync.preLogin().catch(() => {});
+    }
+    // 预热家庭列表缓存：默认进入小程序多为个人空间，三主 tab 不会主动拉家庭列表，
+    // 导致家庭分段拿不到名字。此处提前拉一次，让家庭名在最常用路径也能展示。
+    if (sync.enabled && typeof family.listFamilies === 'function') {
+      family.listFamilies().catch(() => {});
     }
   },
   onShow(options) {
