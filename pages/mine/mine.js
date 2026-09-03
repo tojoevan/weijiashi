@@ -1,6 +1,7 @@
 const theme = require("../../utils/theme.js");
 const icons = require('../../utils/icons.js');
 const sync = require('../../utils/sync/index.js');
+const config = require('../../utils/sync/config.js');
 const profile = require('../../utils/profile.js');
 const { inSpace } = require('../../utils/space.js');
 
@@ -110,5 +111,71 @@ Page({
   },
   toast(e) {
     wx.showToast({ title: e.currentTarget.dataset.t, icon: 'none' });
+  },
+  // 注销并删除我的数据：二次弹窗确认（无需邮件/短信验证），确认后调服务端删除本人全部数据，
+  // 再清本地缓存并重启到首页（静默登录会重新生成空账号）。
+  onDeleteAccount() {
+    wx.showModal({
+      title: '注销并删除数据',
+      content: '此操作不可恢复，将永久删除你所有的家事、事务、档案、集合及家庭关联。确定继续吗？',
+      confirmText: '继续',
+      cancelText: '取消',
+      success: (r1) => {
+        if (!r1.confirm) return;
+        // 第二次确认，强化不可逆提示
+        wx.showModal({
+          title: '再次确认',
+          content: '删除后数据无法找回，你确定要注销账号并删除全部数据吗？',
+          confirmText: '确认删除',
+          cancelText: '再想想',
+          success: (r2) => {
+            if (!r2.confirm) return;
+            this.doDeleteAccount();
+          }
+        });
+      }
+    });
+  },
+  doDeleteAccount() {
+    wx.showLoading({ title: '注销中' });
+    sync.deleteMyAccount()
+      .then(() => {
+        wx.hideLoading();
+        this.clearLocalAndRestart();
+      })
+      .catch((e) => {
+        wx.hideLoading();
+        const m = (e && e.message) || '';
+        // 服务端未部署新端点（404）时提示先更新，避免用户困惑
+        if (m.indexOf('HTTP 404') === 0) {
+          wx.showToast({ title: '请先更新到最新体验版', icon: 'none' });
+        } else {
+          wx.showModal({
+            title: '注销失败',
+            content: '删除请求未成功，你的数据未被改动。可稍后重试。',
+            showCancel: false
+          });
+        }
+      });
+  },
+  // 清空本地全部相关缓存（资料/令牌/数据/family），重启用静默登录重建空账号
+  clearLocalAndRestart() {
+    const keys = [
+      'user_profile',
+      config.STORAGE_KEYS.token,
+      config.STORAGE_KEYS.todos,
+      config.STORAGE_KEYS.tasks,
+      config.STORAGE_KEYS.archive,
+      'js_current_family',
+      'js_family_list',
+      'js_mine_badge',
+      'js_profile_hint_dismissed',
+      'js_last_sync'
+    ];
+    keys.forEach((k) => { try { wx.removeStorageSync(k); } catch (e) {} });
+    wx.showToast({ title: '已注销并删除', icon: 'success' });
+    setTimeout(() => {
+      wx.reLaunch({ url: '/pages/today/today' });
+    }, 1200);
   }
 });

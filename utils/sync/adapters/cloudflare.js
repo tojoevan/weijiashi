@@ -331,6 +331,16 @@ const cloudflareAdapter = {
   // 家庭成员勾选/取消完成（仅对共享待办开放，与内容编辑解耦）
   setItemDone(id, done) {
     return authReq('POST', '/data/family/shared/done', { id, done: done ? 1 : 0 });
+  },
+
+  // ---- 用户数据主权（个保法/GDPR 合规）----
+  // 导出本人全部云端数据明文（服务端按 openid 隔离，仅返回本人数据）
+  exportMyData() {
+    return authReq('GET', '/data/me/export');
+  },
+  // 注销并删除本人全部云端数据（高危，调用方须二次确认）
+  deleteMyAccount() {
+    return authReq('DELETE', '/data/me');
   }
 };
 

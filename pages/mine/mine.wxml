@@ -77,6 +77,16 @@
       <image class="m-chev" src="{{icons.chev}}"/>
     </view>
 
+    <!-- 账号与数据（危险操作，二次确认） -->
+    <view class="section-title" style="margin-top:40rpx">
+      <text class="t">账号与数据</text>
+    </view>
+    <view class="menu-row form" style="margin-top:30rpx" bindtap="onDeleteAccount" hover-class="btn-press" hover-stay-time="80">
+      <view class="m-ic"><image src="{{icons.menuAbout}}"/></view>
+      <text class="m-txt" style="color:#e54d42">注销并删除我的数据</text>
+      <image class="m-chev" src="{{icons.chev}}"/>
+    </view>
+
     <view style="height:220rpx"></view>
   </scroll-view>
 
