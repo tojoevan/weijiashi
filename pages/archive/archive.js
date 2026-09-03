@@ -12,6 +12,7 @@ Page({
     selected: 2,
     space: 'personal',
     familySpaceLabel: '家庭空间',
+    mineBadge: false,
     loading: true,
     items: [],
     sharedItems: [],
@@ -23,6 +24,8 @@ Page({
     this.setData({ themeStyle: theme.getThemeStyle() });
     const space = getApp().globalData.space;
     this.setData({ space });
+    let badge = false; try { badge = wx.getStorageSync('js_mine_badge') === 1; } catch (e) {}
+    this.setData({ mineBadge: badge });
     this.setData({ familySpaceLabel: family.familySpaceLabel(space) });
     this.ensureFamilyLabel();
     if (space === 'family') this.loadFamily();

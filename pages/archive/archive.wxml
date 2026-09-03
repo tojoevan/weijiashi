@@ -85,7 +85,7 @@
       <view class="seg {{selected===0?'active':''}}" bindtap="go" data-p="today"><image class="ic" src="{{icons.tabToday}}"/><text class="lb">今天</text></view>
       <view class="seg {{selected===1?'active':''}}" bindtap="go" data-p="tasks"><image class="ic" src="{{icons.tabTasks}}"/><text class="lb">事务</text></view>
       <view class="seg {{selected===2?'active':''}}" bindtap="go" data-p="archive"><image class="ic" src="{{icons.tabArchive}}"/><text class="lb">档案</text></view>
-      <view class="seg {{selected===3?'active':''}}" bindtap="go" data-p="mine"><image class="ic" src="{{icons.tabMine}}"/><text class="lb">我的</text></view>
+      <view class="seg {{selected===3?'active':''}}" bindtap="go" data-p="mine"><image class="ic" src="{{icons.tabMine}}"/><text class="lb">我的</text><view wx:if="{{mineBadge}}" class="tab-badge"></view></view>
     </view>
   </view>
 

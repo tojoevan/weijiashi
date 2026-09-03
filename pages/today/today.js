@@ -100,6 +100,7 @@ Page({
     selected: 0,
     space: 'personal',
     familySpaceLabel: '家庭空间',
+    mineBadge: false,
     dateText: dateLabel(),
     greeting: greeting(),
     greetName: profile.displayName(),
@@ -116,6 +117,8 @@ Page({
     const app = getApp();
     const space = app.globalData.space;
     this.setData({ space });
+    let badge = false; try { badge = wx.getStorageSync('js_mine_badge') === 1; } catch (e) {}
+    this.setData({ mineBadge: badge });
     this.setData({ familySpaceLabel: family.familySpaceLabel(space) });
     this.ensureFamilyLabel();
     if (space === 'family') this.loadFamily();

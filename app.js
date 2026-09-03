@@ -1,5 +1,6 @@
 const sync = require('./utils/sync/index.js');
 const family = require('./utils/family.js');
+const profile = require('./utils/profile.js');
 
 // 待处理邀请的本地存储键（与 family.js 一样由模块自持，沿用 js_ 前缀）。
 const INVITE_KEY = 'js_pending_invite';
@@ -29,6 +30,15 @@ App({
     if (sync.enabled && typeof family.listFamilies === 'function') {
       family.listFamilies().catch(() => {});
     }
+    // 首启引导：仅第一次进入、且尚未完善资料时，在「我的」tab 点亮红点，
+    // 引导用户去完善资料。用户访问「我的」页即由该页清除（mine.js clearMineBadge），
+    // 非阻塞、可跳过；已完善资料的用户不打扰。
+    try {
+      if (!wx.getStorageSync('js_mine_badge_seeded') && !profile.isSet()) {
+        wx.setStorageSync('js_mine_badge_seeded', 1);
+        wx.setStorageSync('js_mine_badge', 1);
+      }
+    } catch (e) {}
   },
   onShow(options) {
     // 小程序在后台时被分享卡片唤醒，会走 onShow 并带分享 path 的 query。

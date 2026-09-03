@@ -11,8 +11,20 @@
   <scroll-view class="scroll" scroll-y>
     <view style="height:36rpx"></view>
 
+    <!-- 首启资料引导卡：非阻塞、可关闭 -->
+    <view wx:if="{{showProfileHint}}" class="hint-card">
+      <view class="hc-body">
+        <text class="hc-title">完善头像和昵称</text>
+        <text class="hc-sub">家庭成员分享时更易认出你</text>
+      </view>
+      <view class="hc-actions">
+        <view class="hc-later" bindtap="onDismissProfileHint">稍后</view>
+        <view class="hc-go" bindtap="onFillProfile">去完善</view>
+      </view>
+    </view>
+
     <!-- 资料卡 -->
-    <view class="profile-mini {{isSet ? '' : 'pending'}}">
+    <view class="profile-mini {{isSet ? '' : 'pending'}} {{highlightProfile ? 'hl' : ''}}">
       <button class="avatar-btn" open-type="chooseAvatar" bindchooseavatar="onChooseAvatar">
         <image wx:if="{{avatarUrl}}" class="avatar-img" src="{{avatarUrl}}" mode="aspectFill"/>
         <view wx:else class="avatar-img placeholder">{{avatarChar}}</view>
@@ -73,7 +85,7 @@
       <view class="seg {{selected===0?'active':''}}" bindtap="go" data-p="today"><image class="ic" src="{{icons.tabToday}}"/><text class="lb">今天</text></view>
       <view class="seg {{selected===1?'active':''}}" bindtap="go" data-p="tasks"><image class="ic" src="{{icons.tabTasks}}"/><text class="lb">事务</text></view>
       <view class="seg {{selected===2?'active':''}}" bindtap="go" data-p="archive"><image class="ic" src="{{icons.tabArchive}}"/><text class="lb">档案</text></view>
-      <view class="seg {{selected===3?'active':''}}" bindtap="go" data-p="mine"><image class="ic" src="{{icons.tabMine}}"/><text class="lb">我的</text></view>
+      <view class="seg {{selected===3?'active':''}}" bindtap="go" data-p="mine"><image class="ic" src="{{icons.tabMine}}"/><text class="lb">我的</text><view wx:if="{{mineBadge}}" class="tab-badge"></view></view>
     </view>
   </view>
 </view>

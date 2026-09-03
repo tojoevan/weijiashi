@@ -3,6 +3,7 @@ const icons = require('../../utils/icons.js');
 const store = require('../../utils/store.js');
 const sync = require('../../utils/sync/index.js');
 const family = require('../../utils/family.js');
+const profile = require('../../utils/profile.js');
 
 // 生成足够唯一的本地 id（不依赖 crypto）
 function genId() {
@@ -60,6 +61,15 @@ Page({
     const s = e.currentTarget.dataset.s;
     this.setData({ space: s });
     getApp().globalData.space = s;
+    if (s === 'family') this.maybeNudgeProfile();
+  },
+  // 上下文引导：用户切到「家庭空间」准备共享时，若尚未完善资料，一次性轻提示。
+  // 纯增量、不阻塞保存；已提示过或已完善资料则不再打扰。
+  maybeNudgeProfile() {
+    if (profile.isSet()) return;
+    try { if (wx.getStorageSync('js_share_hint_shown')) return; } catch (e) {}
+    try { wx.setStorageSync('js_share_hint_shown', 1); } catch (e) {}
+    wx.showToast({ title: '完善昵称后家人更易认出你', icon: 'none' });
   },
   onTitle(e) { this.setData({ title: e.detail.value }); },
   onItem(e) { this.setData({ item: e.detail.value }); },

@@ -39,6 +39,7 @@ Page({
     selected: 1,
     space: 'personal',
     familySpaceLabel: '家庭空间',
+    mineBadge: false,
     sections: [],   // 全量（已按 room 归并、已归一化）
     view: [],       // 按 space 过滤后的展示列表
     total: 0,
@@ -56,6 +57,8 @@ Page({
     this.setData({ themeStyle: theme.getThemeStyle() });
     const space = getApp().globalData.space;
     this.setData({ space });
+    let badge = false; try { badge = wx.getStorageSync('js_mine_badge') === 1; } catch (e) {}
+    this.setData({ mineBadge: badge });
     this.setData({ familySpaceLabel: family.familySpaceLabel(space) });
     this.ensureFamilyLabel();
     if (space === 'family') this.loadFamily();
