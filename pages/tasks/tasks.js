@@ -7,8 +7,8 @@ const sharedFeed = require('../../utils/sharedFeed.js');
 
 const SEED_TASKS = [
   { id: 'k1', title: '空调滤网清洗', meta: { text: '个人 · 今天 20:00', photos: [] }, tag: '重复', dot: 'brand', shared: false, family_id: null, room: '客厅空调' },
-  { id: 'k2', title: '预约空调加氟', meta: { text: '家庭 · 周日 10:00', photos: [] }, tag: '家庭', dot: 'family', shared: true, family_id: 'default', room: '客厅空调' },
-  { id: 'k3', title: '洗衣机深度清洗', meta: { text: '家庭 · 8/20 到期前', photos: [] }, tag: '保养', dot: 'family', shared: true, family_id: 'default', room: '洗衣机' },
+  { id: 'k2', title: '预约空调加氟', meta: { text: '家庭 · 周日 10:00', photos: [] }, tag: '家庭', dot: 'family', shared: true, family_id: null, room: '客厅空调' },
+  { id: 'k3', title: '洗衣机深度清洗', meta: { text: '家庭 · 8/20 到期前', photos: [] }, tag: '保养', dot: 'family', shared: true, family_id: null, room: '洗衣机' },
   { id: 'k4', title: '续保洗衣机延保', meta: { text: '个人 · 8/20', photos: [] }, tag: '提醒', dot: 'brand', shared: false, family_id: null, room: '洗衣机' }
 ];
 

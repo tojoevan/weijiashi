@@ -51,7 +51,12 @@ function listFamilies() {
       const list = Array.isArray(r) ? r : [];
       try { wx.setStorageSync(FAM_LIST_KEY, list); } catch (e) {}
       const cur = getCurrentFamily();
-      if (!list.some((f) => f.family_id === cur) && list.length) setCurrentFamily(list[0].family_id);
+      // 当前家庭失效（已不在列表）时回退到第一个；
+      // 当前为空（新用户/清缓存）时：单家庭无缝自动选，多家庭不强制第一个，
+      // 避免冷启动覆盖「上次停留的家庭」记忆（多家庭应由用户在家庭成员页显式选择）。
+      if (!list.some((f) => f.family_id === cur)) {
+        if (list.length === 1 || cur) setCurrentFamily(list[0].family_id);
+      }
       return list;
     })();
     _listPromise = p;

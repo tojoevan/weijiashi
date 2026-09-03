@@ -7,6 +7,6 @@
   "scripts": {
     "lint": "node scripts/lint-wxss-conflicts.mjs --strict",
     "test": "node scripts/regression-check.mjs",
-    "preflight": "npm run lint && npm run test"
+    "preflight": "node scripts/check-version.mjs && npm run lint && npm run test"
   }
 }
