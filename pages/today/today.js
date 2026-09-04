@@ -156,14 +156,13 @@ Page({
     if (s === 'family') this.loadFamily();
     else this.loadPersonal();
   },
-  // 家庭名缓存未命中（冷启动个人空间路径）时，异步补拉列表后刷新分段标签
+  // 始终确保家庭列表已加载（含冷启动首次进入个人空间、当前家庭尚未选中的情况），
+  // 列表就绪后刷新分段标签，使「家庭空间 · 名字」稳定展示。listFamilies 带 in-flight 去重，
+  // 会复用 app.js 冷启动那一次预热请求，不会重复打云端。
   ensureFamilyLabel() {
-    const info = family.getCurrentFamilyInfo();
-    if (!info.name && info.id) {
-      family.ensureFamilyInfo()
-        .then(() => this.setData({ familySpaceLabel: family.familySpaceLabel(this.data.space) }))
-        .catch(() => {});
-    }
+    family.listFamilies()
+      .then(() => this.setData({ familySpaceLabel: family.familySpaceLabel(this.data.space) }))
+      .catch(() => {});
   },
   // 家庭共享项 → 打开详情弹层
   openShared(e) {

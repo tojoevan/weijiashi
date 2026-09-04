@@ -11,20 +11,8 @@
   <scroll-view class="scroll" scroll-y>
     <view style="height:36rpx"></view>
 
-    <!-- 首启资料引导卡：非阻塞、可关闭 -->
-    <view wx:if="{{showProfileHint}}" class="hint-card">
-      <view class="hc-body">
-        <text class="hc-title">完善头像和昵称</text>
-        <text class="hc-sub">家庭成员分享时更易认出你</text>
-      </view>
-      <view class="hc-actions">
-        <view class="hc-later" bindtap="onDismissProfileHint">稍后</view>
-        <view class="hc-go" bindtap="onFillProfile">去完善</view>
-      </view>
-    </view>
-
     <!-- 资料卡 -->
-    <view class="profile-mini {{isSet ? '' : 'pending'}} {{highlightProfile ? 'hl' : ''}}">
+    <view class="profile-mini {{isSet ? '' : 'pending'}}">
       <button class="avatar-btn" open-type="chooseAvatar" bindchooseavatar="onChooseAvatar">
         <image wx:if="{{avatarUrl}}" class="avatar-img" src="{{avatarUrl}}" mode="aspectFill"/>
         <view wx:else class="avatar-img placeholder">{{avatarChar}}</view>

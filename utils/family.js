@@ -52,10 +52,10 @@ function listFamilies() {
       try { wx.setStorageSync(FAM_LIST_KEY, list); } catch (e) {}
       const cur = getCurrentFamily();
       // 当前家庭失效（已不在列表）时回退到第一个；
-      // 当前为空（新用户/清缓存）时：单家庭无缝自动选，多家庭不强制第一个，
-      // 避免冷启动覆盖「上次停留的家庭」记忆（多家庭应由用户在家庭成员页显式选择）。
+      // 当前为空（新用户/清缓存/多家庭未显式选）时：列表非空即默认第一个，
+      // 保证家庭段始终展示家庭名、家庭共享流也能加载。用户在「家庭成员」页可随时切换。
       if (!list.some((f) => f.family_id === cur)) {
-        if (list.length === 1 || cur) setCurrentFamily(list[0].family_id);
+        if (cur || list.length) setCurrentFamily(list[0].family_id);
       }
       return list;
     })();
