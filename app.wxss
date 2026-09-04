@@ -318,6 +318,25 @@ view, text, image, scroll-view { box-sizing: border-box; }
 .menu-row .m-txt { flex: 1; font-size: 28rpx; font-weight: 500; color: var(--text-primary); }
 .menu-row .m-chev { width: 16rpx; height: 28rpx; }
 
+/* 注销申请横幅（宽限期内常驻） */
+.del-banner {
+  margin: 30rpx 40rpx 0;
+  padding: 28rpx 28rpx 24rpx;
+  background: var(--surface);
+  border: 2rpx solid #f3c0ba;
+  border-radius: 32rpx;
+  box-shadow: 0 8rpx 24rpx rgba(229,77,66,0.08);
+}
+.del-banner .del-b-h { font-size: 28rpx; font-weight: 600; color: #e54d42; }
+.del-banner .del-b-sub { font-size: 22rpx; color: var(--text-tertiary); margin-top: 8rpx; line-height: 1.5; }
+.del-banner .del-b-actions { display: flex; gap: 20rpx; margin-top: 22rpx; }
+.del-banner .del-b-btn {
+  flex: 1; text-align: center; font-size: 26rpx; font-weight: 600;
+  padding: 18rpx 0; border-radius: 999rpx;
+}
+.del-banner .del-b-btn.ghost { color: var(--brand); background: var(--brand-soft); }
+.del-banner .del-b-btn.danger { color: #fff; background: #e54d42; }
+
 /* 头像 */
 .avatar {
   border-radius: 50%;

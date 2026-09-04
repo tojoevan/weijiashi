@@ -207,6 +207,21 @@ Page({
     const id = e.currentTarget.dataset.id;
     wx.navigateTo({ url: '/pages/edit/edit?list=today&id=' + id });
   },
+  // 勾选切换待办完成态：catchtap 阻断冒泡（不触发整行 editTodo）；
+  // 同时更新视图与全量缓存并落库，避免下次刷新回滚。
+  toggleTodo(e) {
+    const id = e.currentTarget.dataset.id;
+    const all = this._allTodos || [];
+    const src = all.find(t => t.id === id) || (this.data.todos || []).find(t => t.id === id);
+    if (!src) return;
+    const newDone = !src.done;
+    if (this._allTodos) {
+      this._allTodos = this._allTodos.map(t => t.id === id ? Object.assign({}, t, { done: newDone }) : t);
+    }
+    const view = (this.data.todos || []).map(t => t.id === id ? Object.assign({}, t, { done: newDone }) : t);
+    this.setData({ todos: view });
+    sync.saveTodo(Object.assign({}, src, { done: newDone })).catch(() => {});
+  },
   executeReminder(e) {
     wx.navigateTo({ url: e.currentTarget.dataset.target });
   },

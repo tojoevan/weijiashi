@@ -53,7 +53,7 @@
 
       <block wx:for="{{todos}}" wx:key="id">
         <view class="todo-row tapt" bindtap="editTodo" data-id="{{item.id}}">
-          <view class="todo-check"></view>
+          <view class="todo-check {{item.done ? 'done' : ''}}" catchtap="toggleTodo" data-id="{{item.id}}"></view>
           <view class="todo-body">
             <text class="todo-title">{{item.title}}</text>
             <view class="todo-meta">

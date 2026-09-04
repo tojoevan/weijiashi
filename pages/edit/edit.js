@@ -114,6 +114,8 @@ Page({
   },
   _applyItem(list, id, item) {
     const kind = list === 'tasks' ? 'task' : 'todo';
+    // 捕获原始完成态（待办在顶层 done，事务在 meta.done），保存时回填，避免编辑清掉完成标记
+    this._origDone = (kind === 'task') ? !!(item.meta && item.meta.done) : !!item.done;
     // 待办优先读结构化 item；旧数据无此字段时从 meta.text 反解；事务取 room（分组）
     const itemVal = (item.item != null && item.item !== '')
       ? item.item
@@ -202,9 +204,11 @@ Page({
       metaTextVal = form.meta; // 事务：保持原「备注」行为
     }
     const meta = { text: metaTextVal, photos: keys, due };
+    if (list !== 'today') meta.done = this._origDone; // 事务 done 存于 meta，编辑时保留完成态
     // 共享时把当前家庭 id 写入，家庭共享列表才能按家庭过滤、并显示其他成员分享
     const famId = shared ? (family.getCurrentFamily && family.getCurrentFamily()) || null : null;
     const patch = { id: id, title: form.title, meta, tag: form.tag, shared: shared, dot: shared ? 'family' : 'brand', family_id: famId, co_edit: shared ? (coEdit ? 1 : 0) : 0 };
+    if (list === 'today') patch.done = this._origDone; // 待办 done 存顶层，编辑时保留完成态
     if (list === 'today') patch.item = item;
     if (list === 'tasks') patch.room = item; // 事务的「关联物品」即分组/room
     // 保存反馈与关闭不依赖网络：适配器已做本地乐观写入，云端同步放后台。

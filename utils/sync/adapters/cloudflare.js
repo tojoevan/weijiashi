@@ -338,7 +338,20 @@ const cloudflareAdapter = {
   exportMyData() {
     return authReq('GET', '/data/me/export');
   },
-  // 注销并删除本人全部云端数据（高危，调用方须二次确认）
+  // ---- 安全注销：两阶段（申请 → 24h 宽限 → 次日二次确认/可撤销）----
+  // 第一阶段：申请注销，服务端写入待注销行并返回 scheduled_at
+  requestDeletion() {
+    return authReq('POST', '/data/me/deletion-request');
+  },
+  // 撤销注销申请（宽限期内随时可取消，数据保留）
+  cancelDeletion() {
+    return authReq('POST', '/data/me/deletion-cancel');
+  },
+  // 查询待注销状态（前端启动/进页判断是否弹次日确认）
+  getDeletionStatus() {
+    return authReq('GET', '/data/me/deletion-status');
+  },
+  // 注销并删除本人全部云端数据（高危，仅次日二次确认且服务端闸门通过后才真正执行）
   deleteMyAccount() {
     return authReq('DELETE', '/data/me');
   }
