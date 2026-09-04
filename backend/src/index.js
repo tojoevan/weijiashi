@@ -157,6 +157,6 @@ app.get('/img/:key', async (c) => {
   return new Response(obj.body, { headers: { 'content-type': obj.httpMetadata?.contentType || 'image/jpeg', 'cache-control': 'public, max-age=86400' } })
 })
 
-app.get('/', (c) => c.json({ ok: true, svc: 'jiashiben-api' }))
+app.get('/', (c) => c.json({ ok: true, svc: 'weijiashi-api' }))
 
 export default app
