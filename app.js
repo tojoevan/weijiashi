@@ -39,6 +39,32 @@ App({
         wx.setStorageSync('js_mine_badge', 1);
       }
     } catch (e) {}
+
+    // 版本更新检测：微信发布新版本后，用户冷启动会静默拉包；此处在检测到新包就绪时
+    // 主动弹窗提示重启，避免用户一直停留在旧版。下载失败时轻提示，不阻断使用。
+    this._setupUpdateManager();
+  },
+  // 封装微信更新机制，独立于其它启动逻辑，便于单独维护。
+  _setupUpdateManager() {
+    if (typeof wx.getUpdateManager !== 'function') return; // 老基础库兜底
+    const um = wx.getUpdateManager();
+    um.onCheckForUpdate((res) => {
+      // res.hasUpdate 仅用于排查，无用户感知
+    });
+    um.onUpdateReady(() => {
+      wx.showModal({
+        title: '更新提示',
+        content: '微家事已发布新版本，是否重启应用以应用更新？',
+        confirmText: '重启',
+        cancelText: '稍后',
+        success: (res) => {
+          if (res.confirm) um.applyUpdate();
+        }
+      });
+    });
+    um.onUpdateFailed(() => {
+      wx.showToast({ title: '新版本下载失败，可删除小程序后重试', icon: 'none' });
+    });
   },
   onShow(options) {
     // 小程序在后台时被分享卡片唤醒，会走 onShow 并带分享 path 的 query。
