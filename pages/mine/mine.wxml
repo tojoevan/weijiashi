@@ -29,7 +29,7 @@
     <!-- 空间切换 -->
     <view class="space-switch" style="margin-top:30rpx">
       <view class="space-seg {{space==='personal'?'active':''}}" bindtap="setSpace" data-s="personal"><view class="dot brand"></view><text>个人空间</text></view>
-      <view class="space-seg {{space==='family'?'active':''}}" bindtap="setSpace" data-s="family"><view class="dot family"></view><text>家庭空间</text></view>
+      <view class="space-seg {{space==='family'?'active':''}}" bindtap="setSpace" data-s="family"><view class="dot family"></view><text>{{familySpaceLabel}}</text></view>
     </view>
 
     <!-- 统计（真实数据） -->

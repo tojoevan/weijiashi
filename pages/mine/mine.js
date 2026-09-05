@@ -4,6 +4,7 @@ const sync = require('../../utils/sync/index.js');
 const config = require('../../utils/sync/config.js');
 const profile = require('../../utils/profile.js');
 const { inSpace } = require('../../utils/space.js');
+const family = require('../../utils/family.js');
 
 Page({
   data: {
@@ -11,6 +12,7 @@ Page({
     icons,
     selected: 3,
     space: 'personal',
+    familySpaceLabel: '家庭空间',
     stats: { todo: 0, archive: 0, record: 0 },
     nickname: '',
     avatarUrl: '',
@@ -25,7 +27,9 @@ Page({
   },
   onShow() {
     this.setData({ themeStyle: theme.getThemeStyle() });
-    this.setData({ space: getApp().globalData.space });
+    const space = getApp().globalData.space;
+    this.setData({ space });
+    this.setData({ familySpaceLabel: family.familySpaceLabel(space) });
     this.loadProfile();
     this.loadStats();
     // 进入「我的」即清除首启红点
@@ -97,6 +101,7 @@ Page({
   setSpace(e) {
     const s = e.currentTarget.dataset.s;
     this.setData({ space: s });
+    this.setData({ familySpaceLabel: family.familySpaceLabel(s) });
     getApp().globalData.space = s;
     this.loadStats();
   },
