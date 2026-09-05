@@ -29,7 +29,7 @@ Page({
     this.setData({ themeStyle: theme.getThemeStyle() });
     const space = getApp().globalData.space;
     this.setData({ space });
-    this.setData({ familySpaceLabel: family.familySpaceLabel(space) });
+    family.refreshSpaceLabel(this);
     this.loadProfile();
     this.loadStats();
     // 进入「我的」即清除首启红点
@@ -101,7 +101,7 @@ Page({
   setSpace(e) {
     const s = e.currentTarget.dataset.s;
     this.setData({ space: s });
-    this.setData({ familySpaceLabel: family.familySpaceLabel(s) });
+    family.refreshSpaceLabel(this);
     getApp().globalData.space = s;
     this.loadStats();
   },

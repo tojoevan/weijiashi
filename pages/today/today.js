@@ -119,8 +119,7 @@ Page({
     this.setData({ space });
     let badge = false; try { badge = wx.getStorageSync('js_mine_badge') === 1; } catch (e) {}
     this.setData({ mineBadge: badge });
-    this.setData({ familySpaceLabel: family.familySpaceLabel(space) });
-    this.ensureFamilyLabel();
+    family.refreshSpaceLabel(this);
     if (space === 'family') this.loadFamily();
     else this.loadPersonal();
   },
@@ -142,27 +141,17 @@ Page({
         selfOpenid,
         familyEmpty: items.length === 0,
         sharedDetail: null,
-        visibleReminders: [],
-        familySpaceLabel: family.familySpaceLabel(this.data.space)
+        visibleReminders: []
       });
     }).catch(() => {});
   },
   setSpace(e) {
     const s = e.currentTarget.dataset.s;
     this.setData({ space: s });
-    this.setData({ familySpaceLabel: family.familySpaceLabel(s) });
-    this.ensureFamilyLabel();
+    family.refreshSpaceLabel(this);
     getApp().globalData.space = s;
     if (s === 'family') this.loadFamily();
     else this.loadPersonal();
-  },
-  // 始终确保家庭列表已加载（含冷启动首次进入个人空间、当前家庭尚未选中的情况），
-  // 列表就绪后刷新分段标签，使「家庭空间 · 名字」稳定展示。listFamilies 带 in-flight 去重，
-  // 会复用 app.js 冷启动那一次预热请求，不会重复打云端。
-  ensureFamilyLabel() {
-    family.listFamilies()
-      .then(() => this.setData({ familySpaceLabel: family.familySpaceLabel(this.data.space) }))
-      .catch(() => {});
   },
   // 家庭共享项 → 打开详情弹层
   openShared(e) {
@@ -180,8 +169,7 @@ Page({
         sharedItems: items,
         selfOpenid,
         familyEmpty: items.length === 0,
-        sharedDetail: detail,
-        familySpaceLabel: family.familySpaceLabel(this.data.space)
+        sharedDetail: detail
       });
     }).catch(() => {});
   },

@@ -83,6 +83,20 @@ async function ensureFamilyInfo() {
   return getCurrentFamilyInfo();
 }
 
+// 统一刷新某页面的「家庭空间」分段标签，所有主 tab 共用同一入口，避免各自零散调用导致漏接：
+// 1) 先同步用本地缓存名字落一次（ASAP，名字已缓存时立即正确）；
+// 2) 再异步 ensureFamilyInfo()（内部走 listFamilies 的 in-flight 去重）确保名字就绪后刷新一次
+//    （冷启动缓存未命中时自愈，展示「家庭空间 · 名字」）。
+// 用法：页面 onShow / setSpace / 任何需要刷新标签处调用 `family.refreshSpaceLabel(this)`。
+function refreshSpaceLabel(page) {
+  if (!page || typeof page.setData !== 'function') return;
+  const update = () => {
+    try { page.setData({ familySpaceLabel: familySpaceLabel(page.data && page.data.space) }); } catch (e) {}
+  };
+  update();
+  ensureFamilyInfo().then(update).catch(() => {});
+}
+
 async function createFamily(name) {
   const nick = profile.isSet() ? profile.displayName() : '';
   const r = await cloud.familyCreate(name, nick);
@@ -157,6 +171,7 @@ module.exports = {
   getCurrentFamily,
   getCurrentFamilyInfo,
   ensureFamilyInfo,
+  refreshSpaceLabel,
   familySpaceLabel,
   setCurrentFamily,
   listFamilies,

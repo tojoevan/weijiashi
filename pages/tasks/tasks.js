@@ -59,8 +59,7 @@ Page({
     this.setData({ space });
     let badge = false; try { badge = wx.getStorageSync('js_mine_badge') === 1; } catch (e) {}
     this.setData({ mineBadge: badge });
-    this.setData({ familySpaceLabel: family.familySpaceLabel(space) });
-    this.ensureFamilyLabel();
+    family.refreshSpaceLabel(this);
     if (space === 'family') this.loadFamily();
     else this.loadPersonal();
   },
@@ -81,8 +80,7 @@ Page({
         sharedItems: items,
         selfOpenid,
         familyEmpty: items.length === 0,
-        sharedDetail: null,
-        familySpaceLabel: family.familySpaceLabel(this.data.space)
+        sharedDetail: null
       });
     }).catch(() => {});
   },
@@ -101,20 +99,10 @@ Page({
   setSpace(e) {
     const s = e.currentTarget.dataset.s;
     this.setData({ space: s });
-    this.setData({ familySpaceLabel: family.familySpaceLabel(s) });
-    this.ensureFamilyLabel();
+    family.refreshSpaceLabel(this);
     getApp().globalData.space = s;
     if (s === 'family') this.loadFamily();
     else this.loadPersonal();
-  },
-  // 家庭名缓存未命中（冷启动个人空间路径）时，异步补拉列表后刷新分段标签
-  ensureFamilyLabel() {
-    const info = family.getCurrentFamilyInfo();
-    if (!info.name && info.id) {
-      family.ensureFamilyInfo()
-        .then(() => this.setData({ familySpaceLabel: family.familySpaceLabel(this.data.space) }))
-        .catch(() => {});
-    }
   },
   // 家庭共享项 → 打开详情弹层
   openShared(e) {
@@ -132,8 +120,7 @@ Page({
         sharedItems: items,
         selfOpenid,
         familyEmpty: items.length === 0,
-        sharedDetail: detail,
-        familySpaceLabel: family.familySpaceLabel(this.data.space)
+        sharedDetail: detail
       });
     }).catch(() => {});
   },
