@@ -43,6 +43,10 @@
       <text class="label" style="width:auto">金额（元）</text>
       <input class="value" style="text-align:right" type="digit" placeholder="选填" value="{{amount}}" bindinput="onAmount"/>
     </view>
+    <view class="row form" style="margin-top:28rpx">
+      <text class="label" style="width:auto">共享到家庭空间</text>
+      <switch class="share-switch" checked="{{shared}}" bindchange="onToggleShared"/>
+    </view>
 
     <view class="note-card" style="margin-top:28rpx">
       <text class="lbl">备注</text>

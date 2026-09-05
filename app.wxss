@@ -297,6 +297,7 @@ view, text, image, scroll-view { box-sizing: border-box; }
 .row .value { flex: 1; text-align: right; font-size: 28rpx; font-weight: 500; color: var(--text-primary); }
 .row .value.brand { color: var(--brand); }
 .row .chev { width: 16rpx; height: 28rpx; flex-shrink: 0; }
+.share-switch { margin-left: auto; }
 .row-line { border-top: 2rpx solid var(--border-subtle); }
 .row.sm { min-height: 90rpx; }
 

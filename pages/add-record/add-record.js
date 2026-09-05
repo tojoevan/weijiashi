@@ -1,6 +1,7 @@
 const theme = require("../../utils/theme.js");
 const icons = require('../../utils/icons.js');
 const sync = require('../../utils/sync/index.js');
+const family = require('../../utils/family.js');
 
 function genId() {
   return 'a_' + Date.now().toString(36) + Math.random().toString(36).slice(2, 8);
@@ -20,7 +21,8 @@ Page({
     note: '',
     photos: [],   // 已上传到云端后的 key 列表
     previews: [], // 本地临时预览路径
-    saving: false
+    saving: false,
+    shared: false // 是否共享到家庭空间（默认个人，填写时自选）
   },
   goBack() { wx.navigateBack(); },
   onName(e) { this.setData({ name: e.detail.value }); },
@@ -29,6 +31,19 @@ Page({
   onAmount(e) { this.setData({ amount: e.detail.value }); },
   onType(e) { this.setData({ typeIndex: Number(e.detail.value) }); },
   onNote(e) { this.setData({ note: e.detail.value }); },
+  onToggleShared(e) {
+    const v = !!e.detail.value;
+    // 开启共享时，确保已有当前家庭；无则提示并回退
+    if (v) {
+      const info = family.getCurrentFamilyInfo();
+      if (!info || !info.id) {
+        wx.showToast({ title: '请先在家庭成员页选择家庭', icon: 'none' });
+        this.setData({ shared: false });
+        return;
+      }
+    }
+    this.setData({ shared: v });
+  },
   chooseImage() {
     wx.chooseMedia({
       count: 6,
@@ -62,6 +77,7 @@ Page({
     if (d.saving) return;
     this.setData({ saving: true });
 
+    const famId = d.shared ? (family.getCurrentFamilyInfo().id || null) : null;
     const item = {
       id: genId(),
       type: d.types[d.typeIndex] || '其他',
@@ -74,8 +90,8 @@ Page({
         note: d.note,
         photos: d.photos
       },
-      shared: false,
-      family_id: null
+      shared: d.shared,
+      family_id: famId
     };
 
     wx.showLoading({ title: '保存中' });

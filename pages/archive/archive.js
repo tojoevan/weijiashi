@@ -120,7 +120,8 @@ Page({
     wx.navigateTo({ url: '/pages/search/search' });
   },
   goNewTask() {
-    wx.navigateTo({ url: '/pages/new-task/new-task' });
+    // 档案页底部「+」应创建档案条目，而非待办（修复：原误跳 new-task 建待办）
+    wx.navigateTo({ url: '/pages/add-record/add-record' });
   },
   goDetail(e) {
     const id = e.currentTarget.dataset.id;
