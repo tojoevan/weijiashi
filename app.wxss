@@ -637,12 +637,20 @@ view, text, image, scroll-view { box-sizing: border-box; }
 .action-bar .ab-search image { width: 34rpx; height: 34rpx; flex-shrink: 0; }
 .action-bar .ab-search .ab-ph { font-size: 27rpx; color: var(--text-tertiary); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .action-bar .ab-plus {
+  position: relative;
   width: 72rpx; height: 72rpx; border-radius: 50%;
   background: var(--brand);
   display: flex; align-items: center; justify-content: center;
   margin-left: 16rpx; flex-shrink: 0;
 }
-.action-bar .ab-plus text { color: var(--on-brand); font-size: 44rpx; font-weight: 200; line-height: 1; }
+/* 「+」用 CSS 伪元素绘制，彻底脱离字体字形度量，保证在圆形按钮中绝对居中 */
+.action-bar .ab-plus text { color: transparent; font-size: 0; line-height: 0; }
+.action-bar .ab-plus::before,
+.action-bar .ab-plus::after {
+  content: ''; position: absolute; background: var(--on-brand); border-radius: 2rpx;
+}
+.action-bar .ab-plus::before { left: 21rpx; top: 34rpx; width: 30rpx; height: 4rpx; }
+.action-bar .ab-plus::after { left: 34rpx; top: 21rpx; width: 4rpx; height: 30rpx; }
 
 /* 操作条「+」按下态（沿用原 FAB 按压反馈） */
 .fab-press { transform: scale(0.92); box-shadow: 0 6rpx 16rpx rgba(0,0,0,0.22); }
