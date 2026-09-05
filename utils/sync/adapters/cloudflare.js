@@ -199,13 +199,24 @@ const cloudflareAdapter = {
   },
   saveArchive(item) {
     const list = store.read(K.archive) || [];
-    const next = list.some((t) => t.id === item.id) ? store.updateById(list, item.id, item) : list.concat([item]);
-    cacheWrite(K.archive, next);
-    const op = item.id
+    const exists = list.some((t) => t.id === item.id);
+    const next = exists ? store.updateById(list, item.id, item) : list.concat([item]);
+    cacheWrite(K.archive, next); // 乐观本地
+    // 云端：本地已存在该 id → 视为更新走 PUT；否则直接 POST 创建。
+    // 关键：新档案不再先 PUT（会触发数据湖 404），避免每次新建都打一条 404（与 saveTodo/saveTask 一致）。
+    // 若缓存与云端不一致导致 POST 报 404/409/500，再退化为 PUT 更新。
+    const op = exists
       ? authReq('PUT', '/data/archive/' + item.id, item)
           .catch((e) => ((e.message || '').indexOf('HTTP 404') === 0) ? request('POST', '/data/archive', item) : Promise.reject(e))
-      : authReq('POST', '/data/archive', item);
-    return op.then(() => item).catch(() => item);
+      : authReq('POST', '/data/archive', item)
+          .catch((e) => {
+            const m = e.message || '';
+            if (m.indexOf('HTTP 404') === 0 || m.indexOf('HTTP 409') === 0 || m.indexOf('HTTP 500') === 0) {
+              return request('PUT', '/data/archive/' + item.id, item);
+            }
+            return Promise.reject(e);
+          });
+    return op.then(() => item).catch(() => item); // 离线保留本地
   },
   deleteArchive(id) {
     cacheWrite(K.archive, store.removeById(store.read(K.archive) || [], id));
