@@ -4,6 +4,7 @@ const store = require('../../utils/store.js');
 const sync = require('../../utils/sync/index.js');
 const family = require('../../utils/family.js');
 const profile = require('../../utils/profile.js');
+const sec = require('../../utils/sec.js');
 
 // 生成足够唯一的本地 id（不依赖 crypto）
 function genId() {
@@ -89,14 +90,23 @@ Page({
       count: 6,
       mediaType: ['image'],
       sourceType: ['album', 'camera'],
+      sizeType: ['compressed'], // 取系统压缩图，降低超过内容安全检测上限(1MB)的概率
       success: (res) => {
         const temps = (res.tempFiles || []).map((f) => f.tempFilePath).filter(Boolean);
         if (!temps.length) return;
         this.setData({ previews: this.data.previews.concat(temps) });
         temps.forEach((tp) => {
-          sync.uploadImage(tp)
+          // 先压到检测上限内 → 上传（网关入库前做微信内容安全检测，违规返回 403）
+          sec.fitForUpload(tp)
+            .then((fitted) => {
+              if (!fitted) {
+                wx.showToast({ title: sec.TOO_LARGE_TIP, icon: 'none' });
+                return null;
+              }
+              return sync.uploadImage(fitted);
+            })
             .then((r) => { if (r && r.key) this.setData({ photos: this.data.photos.concat([r.key]) }); })
-            .catch(() => {});
+            .catch((e) => { sec.handleUploadError(e); });
         });
       }
     });
@@ -108,13 +118,16 @@ Page({
     this.setData({ previews });
   },
   goBack() { wx.navigateBack(); },
-  create() {
+  async create() {
     const d = this.data;
     const title = (d.title || '').trim();
     if (!title) {
       wx.showToast({ title: d.kind === 'task' ? '请先填写事项标题' : '请先填写待办标题', icon: 'none' });
       return;
     }
+    // 内容安全：标题 / 分组物品名 / 标签 送检（微信 msg_sec_check），不通过则中止创建
+    const textOk = await sec.ensureTextOk([title, d.item, d.tag].filter(Boolean).join('\n'));
+    if (!textOk) return;
     // 事务模式：「关联物品」字段即分组/物品名，必填
     const group = (d.item || '').trim();
     if (d.kind === 'task' && !group) {

@@ -78,6 +78,10 @@ const localAdapter = {
   getImageUrl(key) {
     return key || '';
   },
+  // 本地模式无内容安全检测（无云端、也无 UGC 发布），保持签名一致、一律放行
+  checkText() {
+    return Promise.resolve(true);
+  },
   // 本地模式无跨成员共享，协作开关/完成切换均为空操作（保持签名一致）
   setItemPerm() { return Promise.resolve({ ok: true }); },
   setItemDone() { return Promise.resolve({ ok: true }); }

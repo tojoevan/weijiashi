@@ -3,6 +3,7 @@ const icons = require('../../utils/icons.js');
 const store = require('../../utils/store.js');
 const sync = require('../../utils/sync/index.js');
 const family = require('../../utils/family.js');
+const sec = require('../../utils/sec.js');
 
 // 不同来源对应不同的存储 key 与数据结构
 const MAP = {
@@ -159,14 +160,26 @@ Page({
       count: 6,
       mediaType: ['image'],
       sourceType: ['album', 'camera'],
+      sizeType: ['compressed'], // 取系统压缩图，降低超过内容安全检测上限(1MB)的概率
       success: (res) => {
         const temps = (res.tempFiles || []).map((f) => f.tempFilePath).filter(Boolean);
         if (!temps.length) return;
         // 先以临时路径占位显示，上传成功后回填 key 与可访问 URL
         const photos = this.data.photos.concat(temps.map((tp) => ({ url: tp, key: null })));
         this.setData({ photos });
-        temps.forEach((tp, i) => {
-          sync.uploadImage(tp)
+        temps.forEach((tp) => {
+          // 先压到检测上限内 → 上传（网关入库前做微信内容安全检测，违规返回 403）
+          sec.fitForUpload(tp)
+            .then((fitted) => {
+              if (!fitted) {
+                wx.showToast({ title: sec.TOO_LARGE_TIP, icon: 'none' });
+                const list = this.data.photos.slice();
+                const at = list.findIndex((p) => p.url === tp && !p.key);
+                if (at >= 0) { list.splice(at, 1); this.setData({ photos: list }); }
+                return null;
+              }
+              return sync.uploadImage(fitted);
+            })
             .then((r) => {
               if (r && r.key) {
                 const list = this.data.photos.slice();
@@ -174,7 +187,7 @@ Page({
                 if (at >= 0) { list[at] = { url: sync.getImageUrl(r.key), key: r.key }; this.setData({ photos: list }); }
               }
             })
-            .catch(() => {});
+            .catch((e) => { sec.handleUploadError(e); });
         });
       }
     });
@@ -186,8 +199,11 @@ Page({
     this.setData({ photos });
   },
   goBack() { wx.navigateBack(); },
-  save() {
+  async save() {
     const { list, id, form, shared, coEdit, photos, item } = this.data;
+    // 内容安全：标题 / 关联物品 / 备注 送检（微信 msg_sec_check），不通过则中止保存
+    const textOk = await sec.ensureTextOk([form && form.title, item, form && form.meta].filter(Boolean).join('\n'));
+    if (!textOk) return;
     const keys = photos.map((p) => p.key).filter(Boolean);
     let due;
     if (this.data.datePart) due = this.data.datePart + 'T' + (this.data.timePart || '23:59');

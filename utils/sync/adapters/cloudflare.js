@@ -280,6 +280,10 @@ const cloudflareAdapter = {
   },
 
   // ---- 图片：经网关上传到 R2（multipart /file 字段） ----
+  // 网关在转发数据湖前先做微信内容安全检测（img_sec_check），状态码含义：
+  //   403 = 内容含违规信息，拒绝入库；413 = 图片超过检测上限；503 = 检测服务不可用。
+  // 这里把状态码翻成可识别的错误码，页面统一给通用提示，不暴露检测细节
+  // （审核要求：仅提示用户所发布内容含违规信息）。
   uploadImage(tempFilePath) {
     return ensureLogin().then(() => new Promise((resolve, reject) => {
       wx.uploadFile({
@@ -288,6 +292,11 @@ const cloudflareAdapter = {
         name: 'file',
         header: authHeader(),
         success: (res) => {
+          const code = res.statusCode;
+          if (code === 403) return reject(new Error('CONTENT_RISK'));
+          if (code === 413) return reject(new Error('IMAGE_TOO_LARGE'));
+          if (code === 503) return reject(new Error('SEC_UNAVAILABLE'));
+          if (code >= 400) return reject(new Error('HTTP ' + code));
           try {
             const r = JSON.parse(res.data); // { ok, key, url }
             resolve(r);
@@ -296,6 +305,21 @@ const cloudflareAdapter = {
         fail: reject
       });
     }));
+  },
+
+  // ---- 内容安全：文本检测（微信 msg_sec_check v2，服务端执行）----
+  // 返回 true=可发布；false=含违规信息或检测不可用（保守拦截）。
+  // 例外：网关尚未部署该端点（404）时放行，避免新版本小程序跑在旧网关上无法保存。
+  checkText(content) {
+    const text = String(content || '').trim();
+    if (!text) return Promise.resolve(true);
+    return authReq('POST', '/sec/msg', { content: text })
+      .then((r) => !!(r && r.ok))
+      .catch((e) => {
+        const m = (e && e.message) || '';
+        if (m.indexOf('HTTP 404') === 0) return true;
+        return false;
+      });
   },
   // 由存库的 key（裸 key 或数据湖 url /t/<tenant>/img/<key>）生成可访问的网关地址
   getImageUrl(key) {
